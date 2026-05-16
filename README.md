@@ -1,125 +1,121 @@
 # AI Translate for Raycast
 
-AI Translate is a Raycast extension for fast screenshot OCR translation, powered by BYOK AI providers.
+AI Translate is a small Raycast extension for everyday translation, screenshot OCR, and English rewriting.
 
-Capture a screenshot, extract the text, translate it with the AI model you control, and hear the result read aloud. The goal is to make the common "I can see the text, but I cannot select it" moment feel effortless.
+It is built for a modest but common problem: sometimes you want to translate a sentence, rewrite a line of English, or read text from an image without opening a large translation app. AI Translate keeps those steps inside Raycast and lets you bring your own API keys for the model providers you already use.
 
-Many translation extensions still center on conventional machine translation engines. They are fast, but they often miss context, tone, domain vocabulary, and the structure of long sentences. AI Translate sends your text to an LLM, so translations read like real sentences rather than word-by-word conversions.
+It does not try to replace professional translation, legal review, or careful human editing. For important writing, citations, contracts, academic text, or public-facing copy, please treat the output as a draft and review it yourself.
 
-The extension prioritizes cost-effective, high-quality model providers such as DeepSeek, Xiaomi MiMo, MiniMax, and Kimi, while still supporting OpenAI / ChatGPT and Gemini. If you already subscribe to a Token Plan, you can bring your own API key, base URL, and model ID directly into Raycast.
+## What It Does
 
-## Features
+- **Translate selected text**: select text in any app, run `Translate`, and compare results from enabled providers.
+- **Translate and paste in place**: use `Translate Selection & Paste` when you want a no-window workflow for a global hotkey.
+- **Screenshot translation**: capture a screen region, extract text with OCR, review the result, and translate it.
+- **Standalone OCR**: use `Screenshot OCR` to capture, edit, copy, strip line breaks, auto-paragraph, or send the text to translation.
+- **Rewrite & Coach**: rewrite selected text into more natural English, choose a tone, read the result aloud, and see a short Chinese explanation of why the rewrite sounds more natural.
+- **Rewrite & Replace**: rewrite selected text and paste the result back with no window.
+- **History**: browse recent translations and rewrites you copied or pasted. History is stored locally.
+- **Translation Settings**: adjust model tier, prompt profile, translation style, and custom instructions without digging through every provider setting.
 
-- **Screenshot Translate**: capture a screen region, run OCR, review the source text, and translate with multiple providers side by side. Switch models and compare results without leaving the view.
-- **Screenshot OCR**: capture a screen region, edit the extracted text, strip line breaks, auto-paragraph, copy, or send to translate.
-- **Translate**: translate selected text from any app, or type text directly in the search bar.
-- **Translate Selection & Paste**: a no-window command that translates the selected text with your default provider and pastes it in place — ideal for a global hotkey.
-- **Rewrite & Coach**: rewrite selected text into natural, idiomatic English, view it next to the original, learn _why_ the new phrasing is more natural (explained in Chinese), and hear it read aloud with Gemini TTS. Edit the input inline, switch tone (Natural / Casual / Formal / Concise) with ⌘Y, and switch provider with ⌘M.
-- **Rewrite & Replace**: a no-window command that rewrites the selected text into natural English with your default provider and pastes it in place — ideal for a global hotkey.
-- **History**: browse recent translations and rewrites you copied or pasted, then replay copy, paste, or read aloud. Stored locally on your machine.
-- **Translation Settings**: configure model tier, prompt profile, translation style, and custom instructions from a dedicated settings form.
-- **Model tier system**: switch between Fast (flash/mini models) and Pro (best models) with one keystroke. Custom tier uses model IDs from preferences for new or unlisted models.
-- **TTS read-aloud**: hear translations and source text read aloud using Gemini 3.1 Flash TTS (requires Gemini API key). Pick from eight voices in preferences, read slowly for language practice (⌘⌥S), and starting a new read stops the previous one.
-- **In-UI controls**: switch model tier (⌘M), prompt profile (⌘P), and translation style (⌘Y) without leaving the translate view. Changes take effect immediately and persist across sessions.
-- **Multi-provider comparison**: see translations from all enabled providers at once, with model name, duration, and status in each row.
-- **Baidu OCR**: language auto-detect, paragraph grouping, accurate or general endpoint, with local macOS Vision fallback.
-- **OCR text processing**: strip line breaks (⌘L) and auto-paragraph (⌘⇧P) directly in the OCR result editor.
+## Main Commands
 
-## Commands
+| Command | Mode | English | 中文 |
+| --- | --- | --- | --- |
+| `Translate` | View | Translate selected or typed text, with provider comparison and read-aloud actions. | 翻译选中文本或手动输入文本，可比较多个 provider，并支持朗读。 |
+| `Translate Selection & Paste` | No-view | Translate selected text with the default provider and paste it back. | 用默认 provider 翻译选中文本，并直接粘回原处。 |
+| `Rewrite & Coach` | View | Rewrite text into natural English, explain the changes in Chinese, and read it aloud. | 把文本改写成更自然的英文，并用中文解释为什么这样更地道。 |
+| `Rewrite & Replace` | No-view | Rewrite selected text into natural English and paste it back. | 直接把选中文本改写为自然英文并替换原文。 |
+| `Screenshot Translate` | View | Capture a region, OCR it, review the text, and translate it. | 截图取字、检查 OCR 结果，再进行翻译。 |
+| `Screenshot OCR` | View | Extract text from a screenshot and clean or copy the result. | 从截图中提取文字，并做换行整理、自动分段或复制。 |
+| `History` | View | Revisit recent translation and rewrite results. | 查看最近复制或粘贴过的翻译和改写记录。 |
+| `Translation Settings` | View | Configure model tier, prompt profile, style, and custom instructions. | 配置模型档位、提示词场景、翻译风格和自定义说明。 |
 
-| Command                         | Mode    | Purpose                                                                                                                                                                  |
-| ------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Translate**                   | View    | Translate selected text, typed text, or text passed from other commands. Compare providers, switch models, read aloud.                                                   |
-| **Translate Selection & Paste** | No-view | Translate the selected text with your default provider and paste it in place, no window. Great for a global hotkey.                                                      |
-| **Rewrite & Coach**             | View    | Rewrite selected text into natural, idiomatic English, compare it with the original, read a Chinese explanation of why it sounds more natural, and hear it spoken aloud. |
-| **Rewrite & Replace**           | No-view | Rewrite the selected text into natural English with your default provider and paste it in place, no window. Great for a global hotkey.                                   |
-| **Screenshot Translate**        | View    | Capture a screen region, OCR, review source text, and translate with all enabled providers.                                                                              |
-| **Screenshot OCR**              | View    | Capture a screen region, edit the OCR result, strip line breaks, auto-paragraph, copy, or send to translate.                                                             |
-| **History**                     | View    | Browse recent translations and rewrites you copied or pasted; replay copy, paste, or read aloud.                                                                         |
-| **Translation Settings**        | View    | Configure model tier, prompt profile, translation style, and custom instructions in a dedicated form.                                                                    |
+## Providers
 
-## Model Tier System
+AI Translate is a bring-your-own-key extension. You decide which providers to enable and in what order. The current provider list is:
 
-Instead of manually typing model names, select a tier and every provider uses the right model automatically:
+- DeepSeek
+- Xiaomi MiMo
+- MiniMax
+- Gemini
+- Kimi
+- OpenAI / ChatGPT
 
-| Provider    | Fast                            | Pro                      |
-| ----------- | ------------------------------- | ------------------------ |
-| DeepSeek    | `deepseek-v4-flash`             | `deepseek-v4-pro`        |
-| Xiaomi MiMo | `mimo-v2-flash`                 | `mimo-v2.5-pro`          |
-| MiniMax     | `MiniMax-M2.7-highspeed`        | `MiniMax-M2.7-highspeed` |
-| Gemini      | `gemini-3.1-flash-lite-preview` | `gemini-3.1-pro-preview` |
-| Kimi        | `kimi-for-coding`               | `kimi-for-coding`        |
-| OpenAI      | `gpt-4.1-mini`                  | `gpt-4.1`                |
+Most provider settings live in Raycast preferences: API key, base URL, model name, timeout, and provider order. You can also switch between **Fast**, **Pro**, and **Custom** model tiers from the extension UI. `Custom` uses the model IDs you enter in preferences, which is useful when providers add new models before the extension is updated.
 
-**Custom** tier uses model IDs from extension preferences, so newer models can be entered without updating the extension.
+Provider quality, speed, pricing, and availability depend on your own account, selected endpoint, and selected model.
 
-## Prompt Customization
+## Translation Style
 
-`Prompt Profile` gives you built-in instruction frames for common translation scenarios:
+The default translation prompt prefers meaning-first, natural target-language wording. In other words, it tries to answer: "How would a native speaker naturally say the same thing?"
 
-- **Screenshot OCR**: repair OCR artifacts and keep UI text concise.
-- **General Translation**: everyday sentence and paragraph translation.
-- **Technical / Developer**: preserve APIs, commands, code identifiers, logs, and filenames.
-- **Academic Writing**: preserve argument structure, citations, and domain terminology.
-- **Legal / Policy**: preserve defined terms, obligations, conditions, and legal modality.
-- **Subtitle / Conversation**: use natural spoken phrasing.
-- **Custom Only**: use your own instruction frame.
+You can still make the output more constrained when needed:
 
-Switch profiles from the translate view with ⌘P, or set them in the **Translation Settings** command.
+- **Translation Style**: Balanced, Faithful, Polished, Academic.
+- **Prompt Profile**: Screenshot OCR, General Translation, Technical / Developer, Academic Writing, Legal / Policy, Subtitle / Conversation, Custom Only.
+- **Custom Prompt Instructions**: add your own glossary, audience, tone, or formatting rule.
 
-`Custom Instructions` lets you add reusable guidance such as a preferred glossary, audience, tone, or formatting rule. These are appended to every translation request.
+These settings are meant to help with different reading and writing situations. They are not a guarantee of correctness, especially for specialized legal, academic, medical, or technical material.
 
-## AI Provider Defaults
+## OCR
 
-| Provider    | Protocol                          | Base URL                                           | Default Model                   |
-| ----------- | --------------------------------- | -------------------------------------------------- | ------------------------------- |
-| DeepSeek    | Anthropic-compatible Messages     | `https://api.deepseek.com/anthropic`               | `deepseek-v4-flash`             |
-| Xiaomi MiMo | Token Plan / Anthropic-compatible | `https://token-plan-cn.xiaomimimo.com/anthropic`   | `mimo-v2-flash`                 |
-| MiniMax     | Token Plan / Anthropic-compatible | `https://api.minimaxi.com/anthropic`               | `MiniMax-M2.7-highspeed`        |
-| Kimi        | Anthropic-compatible Coding       | `https://api.kimi.com/coding/`                     | `kimi-for-coding`               |
-| Gemini      | Native Gemini API                 | `https://generativelanguage.googleapis.com/v1beta` | `gemini-3.1-flash-lite-preview` |
-| OpenAI      | Native Chat Completions API       | `https://api.openai.com/v1`                        | `gpt-4.1-mini`                  |
+Screenshot features can use several OCR paths:
 
-## Official API Documentation
+- **Local macOS Vision**: the default local OCR path.
+- **Tesseract Local**: optional local OCR, for users who have Tesseract installed.
+- **Baidu OCR API**: optional API OCR with language hints, general or accurate endpoint, and paragraph grouping.
 
-| Provider    | Official documentation                                                                                                                                                                                 |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| DeepSeek    | [Anthropic API](https://api-docs.deepseek.com/guides/anthropic_api)                                                                                                                                    |
-| Xiaomi MiMo | [Anthropic API Compatibility](https://platform.xiaomimimo.com/static/docs/api/chat/anthropic-api.md), [Token Plan Quick Access](https://platform.xiaomimimo.com/static/docs/tokenplan/quick-access.md) |
-| MiniMax     | [Anthropic API Compatibility](https://platform.minimaxi.com/docs/api-reference/text-anthropic-api), [Token Plan Quickstart](https://platform.minimaxi.com/docs/token-plan/quickstart)                  |
-| Gemini      | [Text Generation](https://ai.google.dev/gemini-api/docs/text-generation), [Speech Generation (TTS)](https://ai.google.dev/gemini-api/docs/speech-generation)                                           |
-| Kimi        | [Kimi Code Overview](https://www.kimi.com/code/docs/en/)                                                                                                                                               |
-| OpenAI      | [Chat Completions API Reference](https://platform.openai.com/docs/api-reference/chat/create)                                                                                                           |
+If an API OCR engine fails and fallback is enabled, the extension tries local macOS Vision on the same screenshot. OCR is still imperfect, so the screenshot translation flow lets you review and edit extracted text before translating.
 
-| OCR Engine    | Official documentation                                                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Baidu OCR API | [General Text Recognition](https://cloud.baidu.com/doc/OCR/s/zk3h7xz52), [Accurate Text Recognition](https://cloud.baidu.com/doc/OCR/s/1k3h7y3db) |
+## Read Aloud
+
+Translation and rewrite results can be read aloud with Gemini TTS when a Gemini API key is configured. You can choose a voice in preferences and use the slow read-aloud option for language practice.
+
+Read-aloud is a convenience feature, not a full audiobook or speech production tool.
+
+## 中文说明
+
+AI Translate 是一个比较轻量的 Raycast 扩展，主要服务三个日常场景：选中文本翻译、截图文字翻译，以及英文表达改写。
+
+它的目标不是做一个“万能翻译器”，也不替代人工审校。更合适的用法是：你在读网页、PDF、软件界面、聊天记录或英文草稿时，想快速得到一个可用的译文、改写稿或 OCR 文本，然后再根据具体语境自己判断。
+
+目前它有几个特点：
+
+- **以意译和自然表达为默认方向**：默认提示词更重视目标语言里的自然说法，而不是逐词对应。
+- **适合不可复制文本**：截图后可以先 OCR，再检查识别结果，最后翻译。
+- **支持多个模型服务商**：可以按自己的 API key 启用 DeepSeek、小米 MiMo、MiniMax、Gemini、Kimi、OpenAI / ChatGPT。
+- **可比较多个 provider 的输出**：开启多个 provider 后，可以在同一个列表里看不同模型的结果、耗时和状态。
+- **支持英文改写学习**：`Rewrite & Coach` 会给出更自然的英文表达，并用中文解释具体改动，适合英语写作和口语表达练习。
+- **支持快速替换工作流**：`Translate Selection & Paste` 和 `Rewrite & Replace` 适合绑定全局快捷键，直接把结果粘回原位置。
+- **保留本地历史**：复制或粘贴过的翻译、改写结果会进入本地历史，方便回看。
+- **配置比较细**：可以选择模型档位、翻译风格、提示词场景、OCR engine、自定义 prompt 和 provider 顺序。
+
+请注意，法律文本、学术文本、合同、公开发布内容和高风险材料仍然需要人工核验。模型输出可能误解上下文、遗漏限定语，OCR 也可能识别错字。
+
+## Privacy Notes
+
+This extension stores history locally through Raycast storage.
+
+When you run translation, rewriting, API OCR, or TTS, the relevant text or OCR image data may be sent to the provider you configured. Please review each provider's own privacy and data policy before sending sensitive material.
 
 ## Keyboard Shortcuts
 
-| Shortcut | Action                                            |
-| -------- | ------------------------------------------------- |
-| ⌘M       | Switch model tier / provider (Rewrite & Coach)    |
-| ⌘P       | Switch prompt profile                             |
-| ⌘Y       | Switch translation style / tone (Rewrite & Coach) |
-| ⌘S       | Read translation aloud (TTS)                      |
-| ⌘⌥S      | Read aloud slowly (TTS, language practice)        |
-| ⌘⇧S      | Read source text aloud (TTS)                      |
-| ⌘R       | Retry translation / Retake screenshot             |
-| ⌘⇧C      | Copy source text / Copy without line breaks       |
-| ⌘L       | Strip line breaks (Screenshot OCR)                |
-| ⌘⇧P      | Auto paragraph (Screenshot OCR)                   |
-| ⌘⏎       | Paste translation / Translate OCR text            |
+Raycast extensions cannot assign global hotkeys by themselves. Open Raycast Settings, find **AI Translate**, and assign hotkeys to the commands you use most.
 
-Raycast extensions cannot force global hotkeys from code. Open Raycast Settings > Extensions > AI Translate and assign your preferred hotkeys to each command.
+Useful in-command shortcuts include:
 
-## OCR Engine Notes
-
-- **Local macOS Vision**: the default; fast, private, network-free.
-- **Tesseract Local**: install with `brew install tesseract`, configure languages such as `eng+chi_sim`.
-- **Baidu OCR API**: `accurate_basic` supports auto language detection, paragraph grouping, and up to 10 MB / 8192 px images. `general_basic` is faster for simple screenshots.
-
-If an API OCR engine fails, the extension falls back to local macOS Vision on the same screenshot.
+| Shortcut | Action |
+| --- | --- |
+| `Cmd+M` | Switch model tier, or switch provider in `Rewrite & Coach`. |
+| `Cmd+P` | Switch prompt profile. |
+| `Cmd+Y` | Switch translation style, or rewrite tone in `Rewrite & Coach`. |
+| `Cmd+S` | Read translation or rewritten text aloud. |
+| `Cmd+Opt+S` | Read aloud slowly. |
+| `Cmd+Shift+S` | Read source text aloud. |
+| `Cmd+R` | Retry translation or retake screenshot. |
+| `Cmd+L` | Strip line breaks in `Screenshot OCR`. |
+| `Cmd+Shift+P` | Auto paragraph in `Screenshot OCR`. |
+| `Cmd+Enter` | Paste translation or translate OCR text. |
 
 ## Development
 
@@ -128,4 +124,4 @@ npm install
 npm run dev
 ```
 
-`npm run dev` generates icons and compiles the Swift OCR helper before starting Raycast development mode. The first screenshot OCR run may require macOS Screen Recording permission for Raycast.
+`npm run dev` generates icons, builds the local OCR helper, and starts Raycast development mode. The first screenshot OCR run may require macOS Screen Recording permission for Raycast.
