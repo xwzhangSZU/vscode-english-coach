@@ -23,6 +23,7 @@ import {
 } from "./preferences";
 import { MissingAPIKeyError } from "./providers";
 import { REWRITE_TONE_LABELS, RewriteResult, runRewrite } from "./rewrite";
+import { loadRuntimeSettings } from "./runtime-settings";
 import { speakText } from "./tts";
 import { ExtensionPreferences, ProviderId, RewriteTone } from "./types";
 
@@ -159,7 +160,8 @@ function CoachResult({
     setError(undefined);
 
     async function run() {
-      const config = getProviderConfig(providerId, preferences);
+      const runtimeSettings = await loadRuntimeSettings();
+      const config = getProviderConfig(providerId, preferences, runtimeSettings.modelTier);
       try {
         const rewrite = await runRewrite(
           config,
