@@ -683,8 +683,8 @@
       "name": "kimiModel",
       "type": "textfield",
       "required": false,
-      "description": "Kimi model name. Official current default is kimi-k2.6; other options include kimi-k2.5 and moonshot-v1-8k/32k/128k.",
-      "default": "kimi-k2.6"
+      "description": "Kimi Code model name for the Anthropic-compatible coding endpoint. Use kimi-for-coding unless you also change the base URL/protocol.",
+      "default": "kimi-for-coding"
     },
     {
       "title": "OpenAI API Key",

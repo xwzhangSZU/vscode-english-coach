@@ -18,3 +18,4 @@
 - Defaulted the Gemini model and Fast/Pro tiers to Gemini 3.1.
 - Addressed review feedback for auto language detection, OCR API error parsing, provider cleanup, and search debounce latency.
 - Hardened OCR retry state, auto-paragraph formatting, TTS playback, and provider configuration error handling.
+- Fixed Kimi Code defaults, OCR helper build portability, screenshot capture error reporting, and numeric preference fallbacks.

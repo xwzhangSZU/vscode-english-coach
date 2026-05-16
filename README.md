@@ -48,7 +48,7 @@ Instead of manually typing model names, select a tier and every provider uses th
 | Xiaomi MiMo | `mimo-v2-flash`                 | `mimo-v2.5-pro`          |
 | MiniMax     | `MiniMax-M2.7-highspeed`        | `MiniMax-M2.7-highspeed` |
 | Gemini      | `gemini-3.1-flash-lite-preview` | `gemini-3.1-pro-preview` |
-| Kimi        | `kimi-k2.6`                     | `kimi-k2.6`              |
+| Kimi        | `kimi-for-coding`               | `kimi-for-coding`        |
 | OpenAI      | `gpt-4.1-mini`                  | `gpt-4.1`                |
 
 **Custom** tier uses model IDs from extension preferences, so newer models can be entered without updating the extension.
@@ -76,7 +76,7 @@ Switch profiles from the translate view with ⌘P, or set them in the **Translat
 | DeepSeek    | Anthropic-compatible Messages     | `https://api.deepseek.com/anthropic`               | `deepseek-v4-flash`             |
 | Xiaomi MiMo | Token Plan / Anthropic-compatible | `https://token-plan-cn.xiaomimimo.com/anthropic`   | `mimo-v2-flash`                 |
 | MiniMax     | Token Plan / Anthropic-compatible | `https://api.minimaxi.com/anthropic`               | `MiniMax-M2.7-highspeed`        |
-| Kimi        | Anthropic-compatible Coding       | `https://api.kimi.com/coding/`                     | `kimi-k2.6`                     |
+| Kimi        | Anthropic-compatible Coding       | `https://api.kimi.com/coding/`                     | `kimi-for-coding`               |
 | Gemini      | Native Gemini API                 | `https://generativelanguage.googleapis.com/v1beta` | `gemini-3.1-flash-lite-preview` |
 | OpenAI      | Native Chat Completions API       | `https://api.openai.com/v1`                        | `gpt-4.1-mini`                  |
 
@@ -88,7 +88,7 @@ Switch profiles from the translate view with ⌘P, or set them in the **Translat
 | Xiaomi MiMo | [Anthropic API Compatibility](https://platform.xiaomimimo.com/static/docs/api/chat/anthropic-api.md), [Token Plan Quick Access](https://platform.xiaomimimo.com/static/docs/tokenplan/quick-access.md) |
 | MiniMax     | [Anthropic API Compatibility](https://platform.minimaxi.com/docs/api-reference/text-anthropic-api), [Token Plan Quickstart](https://platform.minimaxi.com/docs/token-plan/quickstart)                  |
 | Gemini      | [Text Generation](https://ai.google.dev/gemini-api/docs/text-generation), [Speech Generation (TTS)](https://ai.google.dev/gemini-api/docs/speech-generation)                                           |
-| Kimi        | [Agent Integration](https://platform.kimi.ai/docs/guide/agent-support), [API Overview](https://platform.kimi.ai/docs/api/overview)                                                                     |
+| Kimi        | [Kimi Code Overview](https://www.kimi.com/code/docs/en/)                                                                                                                                               |
 | OpenAI      | [Chat Completions API Reference](https://platform.openai.com/docs/api-reference/chat/create)                                                                                                           |
 
 | OCR Engine    | Official documentation                                                                                                                            |
