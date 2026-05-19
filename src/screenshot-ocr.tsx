@@ -9,6 +9,7 @@ import {
   closeMainWindow,
   launchCommand,
   openExtensionPreferences,
+  showHUD,
   showToast,
   Toast,
 } from "@raycast/api";
@@ -40,6 +41,7 @@ export default function Command() {
 
     try {
       await closeMainWindow({ popToRootType: PopToRootType.Suspended });
+      await showHUD("Recognizing text…");
       const result = await recognizeScreenshotText(preferences);
 
       if (captureId !== captureSequence.current) return;
@@ -47,7 +49,7 @@ export default function Command() {
       setIsLoading(false);
       if (!result) {
         setNotice("No text detected. Press ⌘R to retake.");
-        await showToast({ style: Toast.Style.Failure, title: "No text detected" });
+        await showHUD("No text detected");
         return;
       }
 
@@ -75,11 +77,13 @@ export default function Command() {
       setIsLoading(false);
       const description = await reportOcrError(error);
       setNeedsPermission(description.isPermission);
-      setNotice(
-        description.isCancelled
-          ? "Screenshot cancelled. Press ⌘R to retake."
-          : [description.title, description.message].filter(Boolean).join(" — "),
-      );
+      const msg = description.isCancelled
+        ? "Screenshot cancelled. Press ⌘R to retake."
+        : [description.title, description.message].filter(Boolean).join(" — ");
+      setNotice(msg);
+      if (!description.isCancelled) {
+        await showHUD(description.title);
+      }
     }
   }
 
