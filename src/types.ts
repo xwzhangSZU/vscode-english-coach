@@ -10,7 +10,7 @@ export type ModelTier = "fast" | "pro" | "custom";
 
 export type RewriteTone = "natural" | "casual" | "formal" | "concise";
 
-export type OCREngine = "local" | "tesseract" | "baidu";
+export type OCREngine = "local" | "tesseract" | "baidu" | "gemini";
 
 export type OCRTextLayout = "formatted" | "compact";
 
@@ -31,6 +31,7 @@ export interface ExtensionPreferences {
   customPromptInstructions?: string;
   ocrEngine: OCREngine;
   ocrTextLayout: OCRTextLayout;
+  autoCopyOcr?: boolean;
   ocrFallbackToLocal?: boolean;
   ocrTimeoutSeconds?: string;
   tesseractPath?: string;
@@ -61,6 +62,7 @@ export interface ExtensionPreferences {
   geminiAPIKey?: string;
   geminiBaseURL?: string;
   geminiModel?: string;
+  geminiOcrModel?: string;
   geminiTTSVoice?: string;
   kimiAPIKey?: string;
   kimiBaseURL?: string;

@@ -20,7 +20,7 @@ export default async function Command() {
   }
 
   if (!source) {
-    await showHUD("Select text first, then run Rewrite & Replace");
+    await showHUD("No selected text — select text first, or grant Raycast Accessibility access in System Settings");
     return;
   }
 

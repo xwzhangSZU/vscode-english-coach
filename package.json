@@ -334,6 +334,10 @@
         {
           "title": "Baidu OCR API",
           "value": "baidu"
+        },
+        {
+          "title": "Google Gemini (multimodal)",
+          "value": "gemini"
         }
       ]
     },
@@ -354,6 +358,15 @@
           "value": "compact"
         }
       ]
+    },
+    {
+      "name": "autoCopyOcr",
+      "type": "checkbox",
+      "label": "Auto-copy recognized text",
+      "title": "Auto-Copy OCR Result",
+      "required": false,
+      "description": "Copy the recognized text to the clipboard automatically after a successful capture.",
+      "default": true
     },
     {
       "name": "ocrFallbackToLocal",
@@ -619,6 +632,14 @@
       "required": false,
       "description": "Gemini model name. Options include gemini-3.1-flash-lite-preview, gemini-3.1-pro-preview, gemini-3-flash-preview, gemini-2.5-flash, and gemini-2.5-pro.",
       "default": "gemini-3.1-flash-lite-preview"
+    },
+    {
+      "title": "Gemini OCR Model",
+      "name": "geminiOcrModel",
+      "type": "textfield",
+      "required": false,
+      "description": "Multimodal Gemini model used when OCR Engine is Google Gemini. Leave blank to reuse the Gemini Model above.",
+      "default": ""
     },
     {
       "title": "Read Aloud Voice",

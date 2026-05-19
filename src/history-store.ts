@@ -15,6 +15,17 @@ export interface HistoryEntry {
 const STORAGE_KEY = "history-entries-v1";
 const MAX_ENTRIES = 50;
 
+// LocalStorage has no atomic read-modify-write. Serialize mutations so two
+// quick copies (e.g. copying several provider results) can't clobber each
+// other's writes.
+let writeChain: Promise<void> = Promise.resolve();
+
+function enqueueWrite(task: () => Promise<void>): Promise<void> {
+  const next = writeChain.then(task, task);
+  writeChain = next.catch(() => undefined);
+  return next;
+}
+
 export async function loadHistory(): Promise<HistoryEntry[]> {
   const raw = await LocalStorage.getItem<string>(STORAGE_KEY);
   if (!raw) return [];
@@ -33,25 +44,30 @@ export async function addHistoryEntry(entry: Omit<HistoryEntry, "id" | "createdA
   const output = entry.output.trim();
   if (!source || !output) return;
 
-  const existing = await loadHistory();
-  const deduped = existing.filter((e) => !(e.kind === entry.kind && e.source === source && e.output === output));
-  const next: HistoryEntry[] = [
-    {
-      ...entry,
-      source,
-      output,
-      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      createdAt: Date.now(),
-    },
-    ...deduped,
-  ].slice(0, MAX_ENTRIES);
+  await enqueueWrite(async () => {
+    const existing = await loadHistory();
+    const deduped = existing.filter((e) => !(e.kind === entry.kind && e.source === source && e.output === output));
+    const next: HistoryEntry[] = [
+      {
+        ...entry,
+        source,
+        output,
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        createdAt: Date.now(),
+      },
+      ...deduped,
+    ].slice(0, MAX_ENTRIES);
 
-  await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  });
 }
 
 export async function removeHistoryEntry(id: string): Promise<HistoryEntry[]> {
-  const next = (await loadHistory()).filter((e) => e.id !== id);
-  await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  let next: HistoryEntry[] = [];
+  await enqueueWrite(async () => {
+    next = (await loadHistory()).filter((e) => e.id !== id);
+    await LocalStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  });
   return next;
 }
 

@@ -1,7 +1,35 @@
 import { environment, getPreferenceValues, showHUD, showToast, Toast } from "@raycast/api";
 import { ChildProcess, execFile } from "child_process";
 import { mkdirSync, unlink, writeFileSync } from "fs";
+import { readdir, stat, unlink as unlinkAsync } from "fs/promises";
 import { join } from "path";
+
+const STALE_AUDIO_MS = 10 * 60 * 1000;
+
+/** Remove leftover TTS WAVs from runs that were torn down before afplay finished. */
+async function sweepStaleAudio(): Promise<void> {
+  try {
+    const now = Date.now();
+    const files = await readdir(environment.supportPath);
+    await Promise.all(
+      files
+        .filter((name) => name.startsWith("tts-") && name.endsWith(".wav"))
+        .map(async (name) => {
+          const path = join(environment.supportPath, name);
+          try {
+            const info = await stat(path);
+            if (now - info.mtimeMs > STALE_AUDIO_MS) {
+              await unlinkAsync(path);
+            }
+          } catch {
+            // Already gone or unreadable — nothing to clean.
+          }
+        }),
+    );
+  } catch {
+    // supportPath missing yet — created on first successful run.
+  }
+}
 
 const TTS_MODEL = "gemini-3.1-flash-tts-preview";
 const TTS_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
@@ -63,6 +91,7 @@ export async function speakText(text: string, options: SpeakOptions = {}): Promi
   if (!trimmed) return;
 
   stopSpeaking();
+  void sweepStaleAudio();
 
   const voiceName = preferences.geminiTTSVoice?.trim() || DEFAULT_VOICE;
   const spokenText = options.slow

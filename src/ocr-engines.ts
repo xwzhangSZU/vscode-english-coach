@@ -1,10 +1,11 @@
 import { Cache } from "@raycast/api";
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readFile, unlink } from "node:fs/promises";
+import { readFile, stat, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
+import { OcrCancelledError, OcrError, ScreenRecordingPermissionError } from "./ocr-errors";
 import { recognizeText } from "./recognize-text";
 import { ExtensionPreferences, OCREngine } from "./types";
 
@@ -25,19 +26,26 @@ interface BaiduOCRResponse {
   error_msg?: string;
 }
 
+/**
+ * Capture a screen region and OCR it.
+ *
+ * Returns the recognized text, or `undefined` when the capture succeeded but
+ * no text was found. Throws a typed error for the three actionable cases:
+ * {@link OcrCancelledError} (user dismissed the selection — silent),
+ * {@link ScreenRecordingPermissionError} (blank/unreadable capture), and
+ * {@link OcrError} (everything else, with a cleaned message).
+ */
 export async function recognizeScreenshotText(preferences: ExtensionPreferences): Promise<string | undefined> {
   const imagePath = await captureScreenshotToFile();
-  if (!imagePath) {
-    return undefined;
-  }
 
   try {
     try {
       const text = await recognizeImageWithEngine(imagePath, preferences.ocrEngine, preferences);
       return formatOCRText(text, preferences) || undefined;
     } catch (error) {
-      if (preferences.ocrEngine !== "local" && preferences.ocrFallbackToLocal) {
-        const text = await recognizeText(imagePath);
+      const canFallBack = preferences.ocrEngine !== "local" && preferences.ocrFallbackToLocal;
+      if (canFallBack && !(error instanceof ScreenRecordingPermissionError)) {
+        const text = await recognizeText(imagePath, getOCRTimeoutMs(preferences));
         const formatted = formatOCRText(text ?? "", preferences);
         if (formatted) {
           return formatted;
@@ -50,7 +58,7 @@ export async function recognizeScreenshotText(preferences: ExtensionPreferences)
   }
 }
 
-async function captureScreenshotToFile(): Promise<string | undefined> {
+async function captureScreenshotToFile(): Promise<string> {
   const imagePath = join(tmpdir(), `raycast-ai-translate-${Date.now()}-${Math.random().toString(16).slice(2)}.png`);
 
   try {
@@ -58,14 +66,59 @@ async function captureScreenshotToFile(): Promise<string | undefined> {
       timeout: 90_000,
       maxBuffer: 1024 * 1024,
     });
-    return imagePath;
   } catch (error) {
     await unlink(imagePath).catch(() => undefined);
     if (isScreenshotCancelled(error)) {
-      return undefined;
+      throw new OcrCancelledError();
     }
 
-    throw new Error(`Screenshot capture failed: ${execErrorMessage(error)}`);
+    throw new OcrError(`Screenshot capture failed: ${execErrorMessage(error)}`);
+  }
+
+  // screencapture exits 0 even when the user clicks without dragging (no file
+  // written) — that is a cancel, not a failure.
+  const fileSize = await fileSizeBytes(imagePath);
+  if (fileSize === 0) {
+    await unlink(imagePath).catch(() => undefined);
+    throw new OcrCancelledError();
+  }
+
+  await assertReadableImage(imagePath, fileSize);
+  return imagePath;
+}
+
+/**
+ * A non-empty file that macOS cannot decode as an image means screencapture
+ * wrote a blank/locked frame — the signature of a missing Screen Recording
+ * grant on macOS 14.4+. `sips` exit codes are unreliable, but a numeric
+ * `pixelWidth` is a dependable validity signal.
+ */
+async function assertReadableImage(imagePath: string, sizeBytes: number): Promise<void> {
+  let stdout: string;
+  try {
+    ({ stdout } = await execFileAsync("/usr/bin/sips", ["-g", "pixelWidth", imagePath], {
+      timeout: 5_000,
+      maxBuffer: 64 * 1024,
+    }));
+  } catch {
+    // Probe itself failed (sips unavailable / odd path) — don't block on it,
+    // let the OCR engine be the final judge of the file.
+    return;
+  }
+
+  const width = Number.parseInt(stdout.match(/pixelWidth:\s*(\d+)/)?.[1] ?? "", 10);
+  if (!Number.isFinite(width) || width <= 0) {
+    await unlink(imagePath).catch(() => undefined);
+    const sipsHint = stdout.replace(/\s+/g, " ").trim().slice(0, 80) || "no dimensions";
+    throw new ScreenRecordingPermissionError(`capture ${sizeBytes}B, sips: ${sipsHint}`);
+  }
+}
+
+async function fileSizeBytes(path: string): Promise<number> {
+  try {
+    return (await stat(path)).size;
+  } catch {
+    return 0;
   }
 }
 
@@ -117,12 +170,77 @@ async function recognizeImageWithEngine(
 ): Promise<string> {
   switch (engine) {
     case "local":
-      return (await recognizeText(imagePath)) ?? "";
+      return (await recognizeText(imagePath, getOCRTimeoutMs(preferences))) ?? "";
     case "tesseract":
       return recognizeWithTesseract(imagePath, preferences);
     case "baidu":
       return recognizeWithBaidu(imagePath, preferences);
+    case "gemini":
+      return recognizeWithGemini(imagePath, preferences);
   }
+}
+
+const GEMINI_OCR_PROMPT =
+  "Extract all text from this image exactly as it appears. Preserve the original reading " +
+  "order and line breaks. Output only the extracted text — no commentary, no explanations, " +
+  "and no Markdown code fences. If the image contains no text, output nothing.";
+
+interface GeminiOCRResponse {
+  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+  error?: { message?: string; status?: string };
+  promptFeedback?: { blockReason?: string };
+}
+
+async function recognizeWithGemini(imagePath: string, preferences: ExtensionPreferences): Promise<string> {
+  const apiKey = preferences.geminiAPIKey?.trim();
+  if (!apiKey) {
+    throw new OcrError("Gemini API key is not configured. Add it in Extension Preferences to use Gemini OCR.");
+  }
+
+  const baseURL = preferences.geminiBaseURL?.trim() || "https://generativelanguage.googleapis.com/v1beta";
+  const model = preferences.geminiOcrModel?.trim() || preferences.geminiModel?.trim() || "gemini-2.5-flash";
+  const image = (await readFile(imagePath)).toString("base64");
+
+  const response = await fetchWithTimeout(geminiOcrUrl(baseURL, model), getOCRTimeoutMs(preferences), {
+    method: "POST",
+    headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [{ inline_data: { mime_type: "image/png", data: image } }, { text: GEMINI_OCR_PROMPT }],
+        },
+      ],
+      generationConfig: { temperature: 0 },
+    }),
+  });
+
+  const body = await response.text();
+  const data = safeParseJson(body) as GeminiOCRResponse;
+
+  if (!response.ok || data.error?.message) {
+    const message = data.error?.message ?? `HTTP ${response.status}: ${body.slice(0, 200)}`;
+    if (/model/i.test(message) && /(not found|not exist|unsupported|no access|not available)/i.test(message)) {
+      throw new OcrError(
+        `Gemini rejected model "${model}". Set a valid multimodal model in Extension Preferences (Gemini OCR Model).`,
+      );
+    }
+    if (data.promptFeedback?.blockReason) {
+      throw new OcrError(`Gemini blocked the image (${data.promptFeedback.blockReason}).`);
+    }
+    throw new OcrError(message);
+  }
+
+  return (data.candidates?.[0]?.content?.parts ?? [])
+    .map((part) => part.text ?? "")
+    .join("")
+    .trim();
+}
+
+function geminiOcrUrl(baseURL: string, model: string): string {
+  const trimmed = baseURL.replace(/\/+$/, "");
+  const name = model.replace(/^models\//, "");
+  return `${trimmed}/models/${encodeURIComponent(name)}:generateContent`;
 }
 
 async function recognizeWithTesseract(imagePath: string, preferences: ExtensionPreferences): Promise<string> {
@@ -340,44 +458,95 @@ function hashText(text: string): string {
 }
 
 export function stripLineBreaks(text: string): string {
-  return text
-    .replace(/\r?\n/g, " ")
-    .replace(/\s{2,}/g, " ")
-    .trim();
+  return text.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Reflow OCR text into paragraphs. OCR engines emit one hard line break per
+ * visual line, so wrapped prose arrives shredded. We rejoin soft-wrapped
+ * lines and only start a new paragraph on reliable signals: a blank line, a
+ * short line that ends a sentence (a paragraph's last line is rarely
+ * full-width), or an obvious list/heading marker.
+ */
 export function autoParagraph(text: string): string {
-  const lines = text.split(/\r?\n/);
+  const lines = text.split(/\r?\n/).map((line) => line.trim());
+  const widths = lines.filter(Boolean).map((line) => line.length);
+  if (widths.length === 0) {
+    return "";
+  }
+
+  const maxLen = Math.max(...widths);
   const paragraphs: string[] = [];
-  let buffer = "";
+  let current: string[] = [];
+
+  const flush = () => {
+    if (current.length > 0) {
+      paragraphs.push(joinParagraphLines(current));
+      current = [];
+    }
+  };
 
   for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      if (buffer) {
-        paragraphs.push(buffer.trim());
-        buffer = "";
-      }
+    if (!line) {
+      flush();
       continue;
     }
 
-    const endsWithPunctuation = endsWithSentencePunctuation(buffer);
-    const startsWithCapitalOrNumber = /^[A-Z0-9（「『【(]/.test(trimmed);
-    const isShortLine = buffer.length > 0 && buffer.length < 40;
-
-    if (buffer && (endsWithPunctuation || startsWithCapitalOrNumber || isShortLine)) {
-      paragraphs.push(buffer.trim());
-      buffer = trimmed;
-    } else {
-      buffer = buffer ? `${buffer} ${trimmed}` : trimmed;
+    if (current.length > 0) {
+      const prev = current[current.length - 1];
+      const shortSentenceEnd = endsSentence(prev) && prev.length < maxLen * 0.66;
+      if (isListOrHeading(line) || shortSentenceEnd) {
+        flush();
+      }
     }
+
+    current.push(line);
   }
 
-  if (buffer) paragraphs.push(buffer.trim());
+  flush();
   return paragraphs.join("\n\n");
 }
 
-function endsWithSentencePunctuation(text: string): boolean {
-  const lastChar = text.trim().at(-1);
-  return Boolean(lastChar && ".!?;:。！？；：…—”“」』）>]".includes(lastChar));
+function joinParagraphLines(lines: string[]): string {
+  return lines
+    .reduce((acc, next) => {
+      if (!acc) {
+        return next;
+      }
+      if (/[A-Za-z]-$/.test(acc) && /^[a-z]/.test(next)) {
+        return acc.slice(0, -1) + next; // de-hyphenate an OCR word wrap
+      }
+      if (isCJKChar(acc.at(-1)) && isCJKChar(next[0])) {
+        return acc + next; // CJK has no inter-word spaces
+      }
+      return `${acc} ${next}`;
+    }, "")
+    .trim();
+}
+
+function endsSentence(line: string): boolean {
+  const trimmed = line.replace(/[)\]）】」』”’》>]+$/u, "").trimEnd();
+  const last = trimmed.at(-1) ?? "";
+  return ".!?。！？…".includes(last);
+}
+
+function isListOrHeading(line: string): boolean {
+  return /^([-*•·–—]\s|\d+[.)、．]\s?|[(（]\d+[)）]|[a-z][.)]\s|[#＃]+\s|第[一二三四五六七八九十百千零\d]+[章节條条款项篇部话]|[一二三四五六七八九十]+[、.])/.test(
+    line,
+  );
+}
+
+function isCJKChar(char: string | undefined): boolean {
+  if (!char) {
+    return false;
+  }
+  const code = char.codePointAt(0) ?? 0;
+  return (
+    (code >= 0x3000 && code <= 0x303f) || // CJK punctuation
+    (code >= 0x3040 && code <= 0x30ff) || // kana
+    (code >= 0x3400 && code <= 0x9fff) || // CJK ideographs
+    (code >= 0xac00 && code <= 0xd7a3) || // Hangul
+    (code >= 0xf900 && code <= 0xfaff) || // CJK compat
+    (code >= 0xff00 && code <= 0xffef) //  fullwidth/halfwidth forms
+  );
 }

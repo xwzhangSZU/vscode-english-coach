@@ -1,6 +1,7 @@
 import {
   Action,
   ActionPanel,
+  Clipboard,
   Form,
   Icon,
   LaunchType,
@@ -13,13 +14,18 @@ import {
 } from "@raycast/api";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { autoParagraph, recognizeScreenshotText, stripLineBreaks } from "./ocr-engines";
+import { openScreenRecordingSettings, reportOcrError } from "./ocr-errors";
 import { readPreferences } from "./preferences";
 
 export default function Command() {
   const preferences = useMemo(() => readPreferences(), []);
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [notice, setNotice] = useState<string>();
+  const [needsPermission, setNeedsPermission] = useState(false);
+  const [autoCopied, setAutoCopied] = useState(false);
   const captureSequence = useRef(0);
+  const autoCopyEnabled = preferences.autoCopyOcr !== false;
 
   useEffect(() => {
     void capture();
@@ -28,6 +34,9 @@ export default function Command() {
   async function capture() {
     const captureId = ++captureSequence.current;
     setIsLoading(true);
+    setNotice(undefined);
+    setNeedsPermission(false);
+    setAutoCopied(false);
 
     try {
       await closeMainWindow({ popToRootType: PopToRootType.Suspended });
@@ -35,20 +44,42 @@ export default function Command() {
 
       if (captureId !== captureSequence.current) return;
 
+      setIsLoading(false);
       if (!result) {
-        setIsLoading(false);
+        setNotice("No text detected. Press ⌘R to retake.");
         await showToast({ style: Toast.Style.Failure, title: "No text detected" });
         return;
       }
 
       setText(result);
-      setIsLoading(false);
+
+      const stats = `${result.length} characters · ${countWords(result)} words`;
+      let didCopy = false;
+      if (autoCopyEnabled) {
+        try {
+          await Clipboard.copy(result);
+          didCopy = true;
+        } catch {
+          didCopy = false;
+        }
+      }
+      setAutoCopied(didCopy);
+      await showToast({
+        style: Toast.Style.Success,
+        title: didCopy ? "Copied to clipboard" : "Text recognized",
+        message: stats,
+      });
     } catch (error) {
       if (captureId !== captureSequence.current) return;
 
-      const message = error instanceof Error ? error.message : String(error);
       setIsLoading(false);
-      await showToast({ style: Toast.Style.Failure, title: "OCR Failed", message });
+      const description = await reportOcrError(error);
+      setNeedsPermission(description.isPermission);
+      setNotice(
+        description.isCancelled
+          ? "Screenshot cancelled. Press ⌘R to retake."
+          : [description.title, description.message].filter(Boolean).join(" — "),
+      );
     }
   }
 
@@ -103,9 +134,28 @@ export default function Command() {
                 title="Auto Paragraph"
                 onAction={() => setText(autoParagraph(text))}
               />
+              <Action
+                icon={Icon.XMarkCircle}
+                shortcut={{ modifiers: ["cmd", "shift"], key: "backspace" }}
+                style={Action.Style.Destructive}
+                title="Clear Text"
+                onAction={() => {
+                  setText("");
+                  setNotice("Cleared. Press ⌘R to capture again.");
+                  setNeedsPermission(false);
+                  setAutoCopied(false);
+                }}
+              />
             </ActionPanel.Section>
           )}
           <ActionPanel.Section>
+            {needsPermission && (
+              <Action
+                icon={Icon.Lock}
+                title="Open Screen Recording Settings"
+                onAction={() => void openScreenRecordingSettings()}
+              />
+            )}
             <Action
               icon={Icon.Camera}
               shortcut={{ modifiers: ["cmd"], key: "r" }}
@@ -120,14 +170,30 @@ export default function Command() {
       <Form.TextArea
         id="text"
         title="OCR Result"
-        placeholder={isLoading ? "Capturing screenshot..." : "No text detected. Press Cmd+R to retake."}
+        placeholder={isLoading ? "Capturing screenshot..." : (notice ?? "No text detected. Press ⌘R to retake.")}
         value={text}
         onChange={setText}
       />
       <Form.Description title="Characters" text={String(text.length)} />
+      {hasText && (
+        <Form.Description
+          title="Clipboard"
+          text={
+            autoCopied
+              ? "✓ Auto-copied on capture"
+              : autoCopyEnabled
+                ? "Press ⌘C to copy"
+                : "Auto-copy off · ⌘C to copy"
+          }
+        />
+      )}
       <Form.Description title="Engine" text={ocrEngineTitle(preferences.ocrEngine)} />
     </Form>
   );
+}
+
+function countWords(text: string): number {
+  return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
 function ocrEngineTitle(engine: string): string {
@@ -138,6 +204,8 @@ function ocrEngineTitle(engine: string): string {
       return "Tesseract";
     case "baidu":
       return "Baidu OCR";
+    case "gemini":
+      return "Google Gemini";
     default:
       return engine;
   }

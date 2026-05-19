@@ -1,6 +1,7 @@
 import {
   Action,
   ActionPanel,
+  Clipboard,
   Detail,
   Form,
   Icon,
@@ -43,12 +44,20 @@ export default function Command(props: LaunchProps) {
         if (isMounted) setSeed(launchText);
         return;
       }
+      let resolved = "";
       try {
-        const selectedText = normalizeInputText(await getSelectedText());
-        if (isMounted) setSeed(selectedText);
+        resolved = normalizeInputText(await getSelectedText());
       } catch {
-        if (isMounted) setSeed("");
+        resolved = "";
       }
+      if (!resolved) {
+        try {
+          resolved = normalizeInputText((await Clipboard.readText()) ?? "");
+        } catch {
+          resolved = "";
+        }
+      }
+      if (isMounted) setSeed(resolved);
     }
 
     void setup();

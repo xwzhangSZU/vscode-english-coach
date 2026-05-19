@@ -11,6 +11,14 @@ export const LANGUAGE_CHOICES = [
   { title: "Italian", value: "it" },
   { title: "Portuguese", value: "pt" },
   { title: "Russian", value: "ru" },
+  { title: "Arabic", value: "ar" },
+  { title: "Hindi", value: "hi" },
+  { title: "Vietnamese", value: "vi" },
+  { title: "Thai", value: "th" },
+  { title: "Indonesian", value: "id" },
+  { title: "Turkish", value: "tr" },
+  { title: "Dutch", value: "nl" },
+  { title: "Polish", value: "pl" },
 ] as const;
 
 const languageTitleByValue = Object.fromEntries(LANGUAGE_CHOICES.map((item) => [item.value, item.title]));

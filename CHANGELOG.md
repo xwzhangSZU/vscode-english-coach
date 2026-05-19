@@ -19,3 +19,13 @@
 - Addressed review feedback for auto language detection, OCR API error parsing, provider cleanup, and search debounce latency.
 - Hardened OCR retry state, auto-paragraph formatting, TTS playback, and provider configuration error handling.
 - Fixed Kimi Code defaults, OCR helper build portability, screenshot capture error reporting, and numeric preference fallbacks.
+- Added a Google Gemini multimodal OCR engine that reuses the configured Gemini key, with automatic fallback to local Vision.
+- Added Auto-Copy: the Screenshot OCR result is copied to the clipboard automatically, with a copied/word-count confirmation (toggle in preferences).
+- Added a Clear Text action to Screenshot OCR for discarding a result without further steps.
+- Rebuilt Auto Paragraph so wrapped OCR lines reflow into real paragraphs instead of one paragraph per line, with CJK-aware joining and de-hyphenation.
+- Replaced empty "OCR Failed" alerts with classified, self-describing messages: silent on a cancelled capture, actionable on an unreadable one, with a one-click Screen Recording shortcut and diagnostic detail.
+- Made model errors actionable across providers: an unavailable model now explains how to switch tier or set a custom model instead of a raw 400.
+- Stopped reasoning models (o-series, GPT-5 family) from failing translation by sending the correct token and temperature parameters.
+- Fell back to clipboard text when nothing is selected in Translate and Rewrite & Coach, and clarified the no-selection guidance for the paste-in-place commands.
+- Expanded the target language list (Arabic, Hindi, Vietnamese, Thai, Indonesian, Turkish, Dutch, Polish).
+- Serialized history writes so rapid copies no longer drop entries, and cleaned up leftover TTS audio files.

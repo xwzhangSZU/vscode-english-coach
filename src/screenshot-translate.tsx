@@ -17,6 +17,7 @@ import { addHistoryEntry } from "./history-store";
 import { LANGUAGE_CHOICES, getLanguageTitle, resolveTargetLanguage } from "./languages";
 import { getTierLabel } from "./models";
 import { recognizeScreenshotText } from "./ocr-engines";
+import { openScreenRecordingSettings, reportOcrError } from "./ocr-errors";
 import {
   PROVIDER_TITLES,
   getMaxOutputTokens,
@@ -72,6 +73,8 @@ export default function Command() {
   const [ocrDone, setOcrDone] = useState(false);
   const [ocrFailed, setOcrFailed] = useState(false);
   const [ocrError, setOcrError] = useState<string>();
+  const [ocrTitle, setOcrTitle] = useState("No text captured");
+  const [ocrNeedsPermission, setOcrNeedsPermission] = useState(false);
   const [runtimeSettings, setRuntimeSettings] = useState<RuntimeSettings>();
   const [manualRunId, setManualRunId] = useState(0);
   const requestSequence = useRef(0);
@@ -90,6 +93,8 @@ export default function Command() {
     requestSequence.current += 1;
     setOcrFailed(false);
     setOcrError(undefined);
+    setOcrTitle("No text captured");
+    setOcrNeedsPermission(false);
     setOcrDone(false);
     setSourceText("");
     setResults([]);
@@ -103,28 +108,32 @@ export default function Command() {
 
       if (!text) {
         setOcrFailed(true);
-        setOcrError(undefined);
+        setOcrTitle("No text detected");
+        setOcrError("The capture had no recognizable text. Press ⌘R to retake.");
         setIsLoading(false);
         return;
       }
 
       setSourceText(text);
       setOcrDone(true);
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Text captured",
+        message: `${text.length} characters · translating…`,
+      });
     } catch (error) {
       if (captureId !== captureSequence.current) return;
 
-      const message = error instanceof Error ? error.message : String(error);
-      const lowerMessage = message.toLowerCase();
-      if (lowerMessage.includes("cancel") || lowerMessage.includes("abort")) {
-        setOcrFailed(true);
-        setOcrError(undefined);
-        setIsLoading(false);
-        return;
-      }
-      setOcrFailed(true);
-      setOcrError(message);
       setIsLoading(false);
-      await showToast({ style: Toast.Style.Failure, title: "OCR Failed", message });
+      const description = await reportOcrError(error);
+      setOcrFailed(true);
+      setOcrNeedsPermission(description.isPermission);
+      setOcrTitle(description.isCancelled ? "Screenshot cancelled" : description.title);
+      setOcrError(
+        description.isCancelled
+          ? "No region was selected. Press ⌘R to retake."
+          : description.message || "Press ⌘R to retake.",
+      );
     }
   }
 
@@ -239,11 +248,18 @@ export default function Command() {
       )}
       {ocrFailed && (
         <List.EmptyView
-          icon={Icon.XMarkCircle}
-          title="No text captured"
+          icon={ocrNeedsPermission ? Icon.Lock : Icon.XMarkCircle}
+          title={ocrTitle}
           description={ocrError ?? "Screenshot was cancelled or no text was detected."}
           actions={
             <ActionPanel>
+              {ocrNeedsPermission && (
+                <Action
+                  icon={Icon.Lock}
+                  title="Open Screen Recording Settings"
+                  onAction={() => void openScreenRecordingSettings()}
+                />
+              )}
               <Action
                 icon={Icon.Camera}
                 title="Retake Screenshot"

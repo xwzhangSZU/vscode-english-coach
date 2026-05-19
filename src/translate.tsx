@@ -1,6 +1,7 @@
 import {
   Action,
   ActionPanel,
+  Clipboard,
   Color,
   Icon,
   LaunchProps,
@@ -87,12 +88,14 @@ export default function Command(props: LaunchProps) {
         return;
       }
 
-      try {
-        const selectedText = normalizeInputText(await getSelectedText());
-        if (isMounted && !userEditedInput.current) setInputText(selectedText);
-      } catch {
-        if (isMounted && !userEditedInput.current) setInputText("");
+      const selected = await readSelectedText();
+      if (selected) {
+        if (isMounted && !userEditedInput.current) setInputText(selected);
+        return;
       }
+
+      const clipboard = await readClipboardText();
+      if (isMounted && !userEditedInput.current) setInputText(clipboard);
     }
 
     void setup();
@@ -423,6 +426,22 @@ function ResultActions({
 
 function normalizeInputText(text: string | undefined): string {
   return (text ?? "").replace(/\r\n/g, "\n").trim().slice(0, 12000);
+}
+
+async function readSelectedText(): Promise<string> {
+  try {
+    return normalizeInputText(await getSelectedText());
+  } catch {
+    return "";
+  }
+}
+
+async function readClipboardText(): Promise<string> {
+  try {
+    return normalizeInputText((await Clipboard.readText()) ?? "");
+  } catch {
+    return "";
+  }
 }
 
 function subtitle(result: TranslationResult): string {

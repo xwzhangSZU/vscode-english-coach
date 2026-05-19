@@ -79,14 +79,6 @@ const MODEL_CATALOG: Record<ProviderId, ProviderModels> = {
   },
 };
 
-export function getModelForTier(providerId: ProviderId, tier: "fast" | "pro"): string {
-  return MODEL_CATALOG[providerId][tier].id;
-}
-
-export function getModelEntries(providerId: ProviderId): ModelEntry[] {
-  return MODEL_CATALOG[providerId].all;
-}
-
 export function getTierLabel(tier: string): string {
   switch (tier) {
     case "fast":

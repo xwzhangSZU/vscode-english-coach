@@ -54,15 +54,17 @@ export async function translateWithProvider(config: ProviderConfig, request: Tra
   }
   validateProviderConfig(config);
 
-  if (config.id === "gemini") {
-    return translateWithGemini(config, request);
+  try {
+    if (config.id === "gemini") {
+      return await translateWithGemini(config, request);
+    }
+    if (config.apiProtocol === "anthropic") {
+      return await translateWithAnthropicCompatible(config, request);
+    }
+    return await translateWithOpenAICompatible(config, request);
+  } catch (error) {
+    throw refineProviderError(error, config);
   }
-
-  if (config.apiProtocol === "anthropic") {
-    return translateWithAnthropicCompatible(config, request);
-  }
-
-  return translateWithOpenAICompatible(config, request);
 }
 
 export async function generateWithProvider(
@@ -77,13 +79,17 @@ export async function generateWithProvider(
   }
   validateProviderConfig(config);
 
-  if (config.id === "gemini") {
-    return generateWithGeminiProtocol(config, prompt, timeoutMs, maxOutputTokens, options);
+  try {
+    if (config.id === "gemini") {
+      return await generateWithGeminiProtocol(config, prompt, timeoutMs, maxOutputTokens, options);
+    }
+    if (config.apiProtocol === "anthropic") {
+      return await generateWithAnthropicProtocol(config, prompt, timeoutMs, maxOutputTokens);
+    }
+    return await generateWithOpenAIProtocol(config, prompt, timeoutMs, maxOutputTokens);
+  } catch (error) {
+    throw refineProviderError(error, config);
   }
-  if (config.apiProtocol === "anthropic") {
-    return generateWithAnthropicProtocol(config, prompt, timeoutMs, maxOutputTokens);
-  }
-  return generateWithOpenAIProtocol(config, prompt, timeoutMs, maxOutputTokens);
 }
 
 async function generateWithGeminiProtocol(
@@ -170,6 +176,16 @@ async function generateWithOpenAIProtocol(
   timeoutMs: number,
   maxOutputTokens: number,
 ): Promise<string> {
+  const body: Record<string, unknown> = {
+    model: config.model,
+    messages: [
+      { role: "system", content: prompt.system },
+      { role: "user", content: prompt.user },
+    ],
+    stream: false,
+  };
+  applyOpenAIGenerationParams(body, config.model, maxOutputTokens, 0.3);
+
   const response = await postJson<OpenAICompatibleResponse>(
     chatCompletionsUrl(config.baseURL),
     timeoutMs,
@@ -177,16 +193,7 @@ async function generateWithOpenAIProtocol(
       Authorization: `Bearer ${config.apiKey}`,
       "Content-Type": "application/json",
     },
-    {
-      model: config.model,
-      messages: [
-        { role: "system", content: prompt.system },
-        { role: "user", content: prompt.user },
-      ],
-      temperature: 0.3,
-      stream: false,
-      max_tokens: maxOutputTokens,
-    },
+    body,
   );
 
   const content = response.choices?.[0]?.message?.content;
@@ -212,10 +219,9 @@ async function translateWithOpenAICompatible(config: ProviderConfig, request: Tr
       { role: "system", content: prompt.system },
       { role: "user", content: prompt.user },
     ],
-    temperature: 0.2,
     stream: false,
-    max_tokens: request.maxOutputTokens,
   };
+  applyOpenAIGenerationParams(body, config.model, request.maxOutputTokens, 0.2);
 
   const response = await postJson<OpenAICompatibleResponse>(
     chatCompletionsUrl(config.baseURL),
@@ -391,4 +397,61 @@ function extractErrorMessage(value: unknown): string | undefined {
 
 function cleanModelOutput(content: string): string {
   return content.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, "").trim();
+}
+
+/**
+ * OpenAI reasoning models (o-series, GPT-5 family) reject `max_tokens` and any
+ * non-default `temperature` with a 400. They use `max_completion_tokens`
+ * instead and only accept the default temperature.
+ */
+function isReasoningModel(model: string): boolean {
+  return /^(o\d|gpt-5)/i.test(model.trim());
+}
+
+function applyOpenAIGenerationParams(
+  body: Record<string, unknown>,
+  model: string,
+  maxOutputTokens: number,
+  temperature: number,
+): void {
+  if (isReasoningModel(model)) {
+    body.max_completion_tokens = maxOutputTokens;
+    return;
+  }
+
+  body.max_tokens = maxOutputTokens;
+  body.temperature = temperature;
+}
+
+/**
+ * Turn an opaque provider rejection into an actionable message. The default
+ * Fast/Pro model catalog can drift ahead of what a provider/key actually
+ * serves; when that happens the user needs a clear next step instead of a
+ * raw `model_not_found` 400.
+ */
+function refineProviderError(error: unknown, config: ProviderConfig): Error {
+  if (error instanceof MissingAPIKeyError) {
+    return error;
+  }
+
+  const message = error instanceof Error ? error.message : String(error);
+  if (isModelNotFoundError(message)) {
+    return new Error(
+      `${config.title} rejected model "${config.model}" — it may not exist or your key lacks access. ` +
+        `Switch the Model tier to Custom (⌘M) or set a valid ${config.title} model in Extension Preferences.`,
+    );
+  }
+
+  return error instanceof Error ? error : new Error(message);
+}
+
+function isModelNotFoundError(message: string): boolean {
+  const lower = message.toLowerCase();
+  if (!lower.includes("model")) {
+    return false;
+  }
+
+  return /(not found|not exist|no such model|invalid model|unknown model|unsupported model|model_not_found|not available|do not have access|no access|cannot be found|is not supported)/.test(
+    lower,
+  );
 }
