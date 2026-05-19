@@ -103,8 +103,8 @@ export default function Command() {
 
     try {
       await closeMainWindow({ popToRootType: PopToRootType.Suspended });
-      await showHUD("Recognizing text…");
       const text = await recognizeScreenshotText(preferences);
+      await showHUD("Recognizing text…");
 
       if (captureId !== captureSequence.current) return;
 
@@ -119,7 +119,11 @@ export default function Command() {
 
       setSourceText(text);
       setOcrDone(true);
-      await showHUD(`Text captured · ${text.length} chars · translating…`);
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Text captured",
+        message: `${text.length} characters · translating…`,
+      });
     } catch (error) {
       if (captureId !== captureSequence.current) return;
 

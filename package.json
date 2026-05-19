@@ -95,6 +95,22 @@
       ]
     },
     {
+      "name": "screenshot-ocr-copy",
+      "title": "Screenshot OCR Copy",
+      "subtitle": "AI Translate",
+      "description": "Capture a screen region, OCR the text, and copy it to the clipboard.",
+      "mode": "no-view",
+      "icon": "screenshot-translate.png",
+      "keywords": [
+        "ocr",
+        "screenshot",
+        "capture",
+        "copy",
+        "text",
+        "clipboard"
+      ]
+    },
+    {
       "name": "screenshot-ocr",
       "title": "Screenshot OCR",
       "subtitle": "AI Translate",

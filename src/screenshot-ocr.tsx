@@ -41,8 +41,8 @@ export default function Command() {
 
     try {
       await closeMainWindow({ popToRootType: PopToRootType.Suspended });
-      await showHUD("Recognizing text…");
       const result = await recognizeScreenshotText(preferences);
+      await showHUD("Recognizing text…");
 
       if (captureId !== captureSequence.current) return;
 
@@ -77,10 +77,11 @@ export default function Command() {
       setIsLoading(false);
       const description = await reportOcrError(error);
       setNeedsPermission(description.isPermission);
-      const msg = description.isCancelled
-        ? "Screenshot cancelled. Press ⌘R to retake."
-        : [description.title, description.message].filter(Boolean).join(" — ");
-      setNotice(msg);
+      setNotice(
+        description.isCancelled
+          ? "Screenshot cancelled. Press ⌘R to retake."
+          : [description.title, description.message].filter(Boolean).join(" — "),
+      );
       if (!description.isCancelled) {
         await showHUD(description.title);
       }
