@@ -5,12 +5,9 @@ import {
   Icon,
   LaunchType,
   List,
-  PopToRootType,
   Toast,
-  closeMainWindow,
   launchCommand,
   openExtensionPreferences,
-  showHUD,
   showToast,
 } from "@raycast/api";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -102,9 +99,7 @@ export default function Command() {
     setIsLoading(true);
 
     try {
-      await closeMainWindow({ popToRootType: PopToRootType.Suspended });
       const text = await recognizeScreenshotText(preferences);
-      await showHUD("Recognizing text…");
 
       if (captureId !== captureSequence.current) return;
 
@@ -113,7 +108,6 @@ export default function Command() {
         setOcrTitle("No text detected");
         setOcrError("The capture had no recognizable text. Press ⌘R to retake.");
         setIsLoading(false);
-        await showHUD("No text detected");
         return;
       }
 
@@ -137,9 +131,6 @@ export default function Command() {
           ? "No region was selected. Press ⌘R to retake."
           : description.message || "Press ⌘R to retake.",
       );
-      if (!description.isCancelled) {
-        await showHUD(description.title);
-      }
     }
   }
 

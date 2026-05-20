@@ -5,11 +5,8 @@ import {
   Form,
   Icon,
   LaunchType,
-  PopToRootType,
-  closeMainWindow,
   launchCommand,
   openExtensionPreferences,
-  showHUD,
   showToast,
   Toast,
 } from "@raycast/api";
@@ -40,16 +37,14 @@ export default function Command() {
     setAutoCopied(false);
 
     try {
-      await closeMainWindow({ popToRootType: PopToRootType.Suspended });
       const result = await recognizeScreenshotText(preferences);
-      await showHUD("Recognizing text…");
 
       if (captureId !== captureSequence.current) return;
 
       setIsLoading(false);
       if (!result) {
         setNotice("No text detected. Press ⌘R to retake.");
-        await showHUD("No text detected");
+        await showToast({ style: Toast.Style.Failure, title: "No text detected" });
         return;
       }
 
@@ -82,9 +77,6 @@ export default function Command() {
           ? "Screenshot cancelled. Press ⌘R to retake."
           : [description.title, description.message].filter(Boolean).join(" — "),
       );
-      if (!description.isCancelled) {
-        await showHUD(description.title);
-      }
     }
   }
 
