@@ -27,11 +27,15 @@ export default function Command() {
 
   useEffect(() => {
     void capture();
+    return () => {
+      captureSequence.current += 1;
+    };
   }, []);
 
   async function capture() {
     const captureId = ++captureSequence.current;
     setIsLoading(true);
+    setText("");
     setNotice(undefined);
     setNeedsPermission(false);
     setAutoCopied(false);
@@ -85,7 +89,7 @@ export default function Command() {
   return (
     <Form
       isLoading={isLoading}
-      navigationTitle={`Screenshot OCR · ${text.length} chars`}
+      navigationTitle={text.length > 0 ? `Screenshot OCR · ${text.length} chars` : "Screenshot OCR"}
       actions={
         <ActionPanel>
           {hasText && !isLoading && (
@@ -203,6 +207,8 @@ function ocrEngineTitle(engine: string): string {
       return "Baidu OCR";
     case "gemini":
       return "Google Gemini";
+    case "openai":
+      return "OpenAI Vision";
     default:
       return engine;
   }

@@ -35,32 +35,7 @@ import {
   TranslationResult,
   TranslationStyle,
 } from "./types";
-
-const providerIcons = {
-  deepseek: Icon.Waveform,
-  mimo: Icon.AppWindowGrid2x2,
-  minimax: Icon.Bolt,
-  gemini: Icon.Stars,
-  kimi: Icon.Moon,
-  openai: Icon.Message,
-} as const;
-
-const PROMPT_PROFILE_LABELS: Record<PromptProfile, string> = {
-  screenshot: "Screenshot OCR",
-  general: "General",
-  technical: "Technical",
-  academic: "Academic",
-  legal: "Legal",
-  subtitle: "Subtitle",
-  custom: "Custom",
-};
-
-const STYLE_LABELS: Record<TranslationStyle, string> = {
-  balanced: "Balanced",
-  faithful: "Faithful",
-  polished: "Polished",
-  academic: "Academic",
-};
+import { PROMPT_PROFILE_LABELS, PROVIDER_ICONS, STYLE_LABELS, quoted } from "./ui-constants";
 
 export default function Command() {
   const preferences = useMemo(() => readPreferences(), []);
@@ -84,6 +59,10 @@ export default function Command() {
 
   useEffect(() => {
     void captureScreenshot();
+    return () => {
+      captureSequence.current += 1;
+      requestSequence.current += 1;
+    };
   }, []);
 
   async function captureScreenshot() {
@@ -106,7 +85,7 @@ export default function Command() {
       if (!text) {
         setOcrFailed(true);
         setOcrTitle("No text detected");
-        setOcrError("The capture had no recognizable text. Press ⌘R to retake.");
+        setOcrError("The capture had no recognizable text. Choose Retake Screenshot to try again.");
         setIsLoading(false);
         return;
       }
@@ -128,8 +107,8 @@ export default function Command() {
       setOcrTitle(description.isCancelled ? "Screenshot cancelled" : description.title);
       setOcrError(
         description.isCancelled
-          ? "No region was selected. Press ⌘R to retake."
-          : description.message || "Press ⌘R to retake.",
+          ? "No region was selected. Choose Retake Screenshot to try again."
+          : description.message || "Choose Retake Screenshot to try again.",
       );
     }
   }
@@ -260,6 +239,7 @@ export default function Command() {
               <Action
                 icon={Icon.Camera}
                 title="Retake Screenshot"
+                shortcut={{ modifiers: ["cmd", "shift"], key: "r" }}
                 onAction={() => {
                   setOcrFailed(false);
                   setIsLoading(true);
@@ -292,8 +272,8 @@ export default function Command() {
                 />
                 <Action
                   icon={Icon.Camera}
-                  title="Retake"
-                  shortcut={{ modifiers: ["cmd"], key: "r" }}
+                  title="Retake Screenshot"
+                  shortcut={{ modifiers: ["cmd", "shift"], key: "r" }}
                   onAction={() => void retake()}
                 />
               </ActionPanel>
@@ -308,7 +288,7 @@ export default function Command() {
             <List.Item
               key={r.providerId}
               id={r.providerId}
-              icon={{ source: providerIcons[r.providerId], tintColor: statusColor(r.status) }}
+              icon={{ source: PROVIDER_ICONS[r.providerId], tintColor: statusColor(r.status) }}
               title={r.providerTitle}
               subtitle={statusText(r)}
               accessories={acc(r, targetLangTitle)}
@@ -503,11 +483,4 @@ function md(r: TranslationResult, src: string): string {
     return `**${r.providerTitle}**${tag}\n\nAPI key not configured.\n\n---\n\n${quoted(src)}`;
   if (r.status === "error") return `**${r.providerTitle}**${tag}\n\n${r.error ?? "Failed."}\n\n---\n\n${quoted(src)}`;
   return `**${r.providerTitle}**${tag}\n\n## Translation\n\n${r.translation ?? ""}\n\n---\n\n**Source**\n\n${quoted(src)}`;
-}
-
-function quoted(text: string): string {
-  return text
-    .split("\n")
-    .map((l) => `> ${l}`)
-    .join("\n");
 }
