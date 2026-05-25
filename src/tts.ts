@@ -361,7 +361,7 @@ async function playWav(wavData: Buffer, signal?: AbortSignal): Promise<void> {
 
   if (signal?.aborted) {
     unlink(audioPath, () => undefined);
-    throw new DOMException("Playback aborted", "AbortError");
+    throw abortError("Playback aborted");
   }
 
   await new Promise<void>((resolve, reject) => {
@@ -386,6 +386,12 @@ async function playWav(wavData: Buffer, signal?: AbortSignal): Promise<void> {
     activePlayback = child;
     signal?.addEventListener("abort", abortPlayback, { once: true });
   });
+}
+
+function abortError(message: string): Error {
+  const error = new Error(message);
+  error.name = "AbortError";
+  return error;
 }
 
 function parseJson<T>(text: string): T & { error?: { message?: string } } {
