@@ -1,0 +1,50 @@
+import * as vscode from "vscode";
+import { HistoryEntry, isHistoryEntry, mergeHistory } from "../core/history";
+
+const KEY = "englishCoach.history.v1";
+
+export type NewHistoryEntry = Omit<HistoryEntry, "id" | "createdAt">;
+
+export class HistoryStore {
+  private readonly _onDidChange = new vscode.EventEmitter<void>();
+  public readonly onDidChange = this._onDidChange.event;
+
+  constructor(private readonly context: vscode.ExtensionContext) {}
+
+  load(): HistoryEntry[] {
+    const raw = this.context.globalState.get<unknown[]>(KEY) ?? [];
+    return Array.isArray(raw) ? raw.filter(isHistoryEntry) : [];
+  }
+
+  async add(entry: NewHistoryEntry): Promise<void> {
+    const source = entry.source.trim();
+    const output = entry.output.trim();
+    if (!source || !output) return;
+    const full: HistoryEntry = {
+      ...entry,
+      source,
+      output,
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      createdAt: Date.now(),
+    };
+    await this.context.globalState.update(KEY, mergeHistory(this.load(), full));
+    this._onDidChange.fire();
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.context.globalState.update(
+      KEY,
+      this.load().filter((e) => e.id !== id),
+    );
+    this._onDidChange.fire();
+  }
+
+  async clear(): Promise<void> {
+    await this.context.globalState.update(KEY, []);
+    this._onDidChange.fire();
+  }
+
+  dispose(): void {
+    this._onDidChange.dispose();
+  }
+}
