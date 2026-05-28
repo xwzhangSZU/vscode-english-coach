@@ -10,12 +10,17 @@ export function registerCoachParticipant(
   context: vscode.ExtensionContext,
   history: HistoryStore,
 ): vscode.ChatParticipant {
-  const handler: vscode.ChatRequestHandler = async (request, _ctx, stream) => {
+  const handler: vscode.ChatRequestHandler = async (request, _ctx, stream, token) => {
     const text = request.prompt.trim();
     if (!text) {
-      stream.markdown("Type some English after `@coach`, or use `/translate` to translate.");
+      stream.markdown(
+        request.command === "translate"
+          ? "Type text to translate after `/translate`."
+          : "Type some English after `@coach`, or use `/translate` to translate.",
+      );
       return {};
     }
+    if (token.isCancellationRequested) return {};
     const id = defaultProviderId();
     const title = PROVIDER_TITLES[id];
     try {
@@ -33,11 +38,13 @@ export function registerCoachParticipant(
           maxOutputTokens: getMaxOutputTokens(),
         };
         const translation = await translateWithProvider(config, req);
+        if (token.isCancellationRequested) return {};
         stream.markdown(translation);
         await history.add({ kind: "translate", source: text, output: translation, provider: title, model: config.model });
       } else {
         stream.progress("Coaching…");
         const result = await runRewrite(config, text, "natural", getTimeoutMs(), getMaxOutputTokens());
+        if (token.isCancellationRequested) return {};
         stream.markdown(`**✨ Native version**\n\n${result.rewritten}\n\n**💡 为什么更自然**\n\n${result.why}`);
         await history.add({
           kind: "coach",

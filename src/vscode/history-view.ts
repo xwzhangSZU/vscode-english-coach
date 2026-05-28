@@ -5,9 +5,10 @@ import { HistoryStore } from "./history";
 export class HistoryTreeProvider implements vscode.TreeDataProvider<HistoryEntry> {
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<void>();
   public readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+  private readonly storeListener: vscode.Disposable;
 
   constructor(private readonly store: HistoryStore) {
-    store.onDidChange(() => this._onDidChangeTreeData.fire());
+    this.storeListener = store.onDidChange(() => this._onDidChangeTreeData.fire());
   }
 
   getTreeItem(entry: HistoryEntry): vscode.TreeItem {
@@ -27,6 +28,7 @@ export class HistoryTreeProvider implements vscode.TreeDataProvider<HistoryEntry
   }
 
   dispose(): void {
+    this.storeListener.dispose();
     this._onDidChangeTreeData.dispose();
   }
 }

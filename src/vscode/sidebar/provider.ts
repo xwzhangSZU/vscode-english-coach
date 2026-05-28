@@ -23,6 +23,7 @@ const TONE_OPTIONS: RewriteTone[] = ["natural", "casual", "formal", "concise"];
 export class CoachViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "englishCoach.sidebar";
   private view?: vscode.WebviewView;
+  private pendingRestore?: HistoryEntry;
   public onWatchToggle?: (enabled: boolean) => void;
   public onVisibilityChange?: () => void;
 
@@ -50,7 +51,7 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
   }
 
   public reveal(): void {
-    this.view?.show?.(true);
+    void vscode.commands.executeCommand("englishCoach.sidebar.focus");
   }
 
   public post(message: unknown): void {
@@ -62,6 +63,10 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
     const providers = getOrderedProviderIds().map((id) => ({ id, title: PROVIDER_TITLES[id] }));
     if (!state.providerId && providers[0]) state.providerId = providers[0].id;
     this.post({ type: "init", state, providers });
+    if (this.pendingRestore) {
+      this.post({ type: "restore", entry: this.pendingRestore });
+      this.pendingRestore = undefined;
+    }
   }
 
   private async onMessage(msg: any): Promise<void> {
@@ -119,6 +124,10 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
 
   public restoreEntry(entry: HistoryEntry): void {
     this.reveal();
+    if (!this.view) {
+      this.pendingRestore = entry;
+      return;
+    }
     this.post({ type: "restore", entry });
   }
 

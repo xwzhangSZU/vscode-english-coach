@@ -38,7 +38,9 @@ export function activate(context: vscode.ExtensionContext): void {
       await vscode.env.clipboard.writeText(entry.output);
       void vscode.window.showInformationMessage("Copied the native version.");
     }),
-    vscode.commands.registerCommand("englishCoach.history.delete", (entry: HistoryEntry) => history.remove(entry.id)),
+    vscode.commands.registerCommand("englishCoach.history.delete", async (entry: HistoryEntry) => {
+      await history.remove(entry.id);
+    }),
     vscode.commands.registerCommand("englishCoach.history.clear", async () => {
       const ok = await vscode.window.showWarningMessage("Clear all English Coach history?", { modal: true }, "Clear");
       if (ok === "Clear") await history.clear();

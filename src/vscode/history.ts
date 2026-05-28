@@ -20,12 +20,13 @@ export class HistoryStore {
     const source = entry.source.trim();
     const output = entry.output.trim();
     if (!source || !output) return;
+    const now = Date.now();
     const full: HistoryEntry = {
       ...entry,
       source,
       output,
-      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
-      createdAt: Date.now(),
+      id: `${now}-${Math.random().toString(16).slice(2)}`,
+      createdAt: now,
     };
     await this.context.globalState.update(KEY, mergeHistory(this.load(), full));
     this._onDidChange.fire();
