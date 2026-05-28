@@ -1,4 +1,0 @@
-Target dependency graph (2 targets)
-Target 'AllExcludingTests' in project 'Aggregate'
-➜ Explicit dependency on target 'recognizeText_-6155E60A070BF988_PackageProduct' in project 'recognizeText'
-Target 'recognizeText_-6155E60A070BF988_PackageProduct' in project 'recognizeText' (no dependencies)
