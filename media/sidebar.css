@@ -1,0 +1,18 @@
+body { padding: 8px; font-family: var(--vscode-font-family); color: var(--vscode-foreground); font-size: var(--vscode-font-size); }
+.row { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+.row label { font-size: 11px; opacity: 0.8; }
+select, textarea, button { font-family: inherit; color: var(--vscode-input-foreground); background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border, transparent); border-radius: 2px; }
+select { flex: 1; padding: 2px; }
+textarea { width: 100%; box-sizing: border-box; min-height: 76px; padding: 6px; resize: vertical; }
+.actions { display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
+button { padding: 4px 8px; cursor: pointer; background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; }
+button.secondary { background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); }
+.watch { display: flex; gap: 6px; align-items: center; font-size: 11px; opacity: 0.9; margin-bottom: 8px; }
+hr { border: none; border-top: 1px solid var(--vscode-panel-border); margin: 8px 0; }
+.section-title { font-weight: 600; margin: 4px 0; }
+.native { white-space: pre-wrap; padding: 6px; background: var(--vscode-textBlockQuote-background); border-left: 3px solid var(--vscode-textBlockQuote-border); }
+.why { white-space: pre-wrap; }
+.muted { opacity: 0.7; font-style: italic; }
+.error { color: var(--vscode-errorForeground); }
+.error button { margin-top: 6px; }
+.hidden { display: none; }
