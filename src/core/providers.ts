@@ -1,5 +1,5 @@
 import { buildTranslationPrompt } from "./prompt";
-import { ProviderConfig, TranslationRequest } from "./types";
+import { ProviderAPIProtocol, ProviderConfig, ProviderId, TranslationRequest } from "./types";
 
 interface OpenAICompatibleResponse {
   choices?: Array<{
@@ -558,4 +558,17 @@ function isModelNotFoundError(message: string): boolean {
   return /(not found|not exist|no such model|invalid model|unknown model|unsupported model|not supported model|model_not_found|not available|do not have access|no access|cannot be found|is not supported)/.test(
     lower,
   );
+}
+
+/**
+ * Pick the wire protocol from the configured base URL so users can flip
+ * providers between Anthropic-compatible and OpenAI-compatible endpoints
+ * without a separate setting.
+ */
+export function detectProtocol(id: ProviderId, baseURL: string): ProviderAPIProtocol {
+  if (id === "gemini" || id === "openai") return "openai";
+  const lower = baseURL.toLowerCase();
+  if (lower.includes("/anthropic") || lower.includes("/coding")) return "anthropic";
+  if (lower.includes("moonshot.") || /\/v1(\/chat\/completions)?\/?$/.test(lower)) return "openai";
+  return "anthropic";
 }
