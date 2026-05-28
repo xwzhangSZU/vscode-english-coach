@@ -16,6 +16,9 @@ describe("detectProtocol", () => {
   it("moonshot host and /v1 endpoints -> openai", () => {
     expect(detectProtocol("kimi", "https://api.moonshot.ai/v1")).toBe("openai");
   });
+  it("qwen is always openai (DashScope compatible-mode)", () => {
+    expect(detectProtocol("qwen", "https://dashscope.aliyuncs.com/compatible-mode/v1")).toBe("openai");
+  });
   it("falls back to anthropic", () => {
     expect(detectProtocol("mimo", "https://example.com/foo")).toBe("anthropic");
   });

@@ -89,13 +89,13 @@
       "properties": {
         "englishCoach.defaultProvider": {
           "type": "string",
-          "enum": ["deepseek", "mimo", "gemini", "kimi", "openai"],
-          "default": "deepseek",
+          "enum": ["qwen", "deepseek", "mimo", "gemini", "kimi", "openai"],
+          "default": "qwen",
           "description": "Provider used by default and listed first."
         },
         "englishCoach.providerOrder": {
           "type": "string",
-          "default": "deepseek,mimo,gemini,kimi,openai",
+          "default": "qwen,deepseek,mimo,gemini,kimi,openai",
           "description": "Comma-separated provider order shown in the switcher."
         },
         "englishCoach.modelTier": {
@@ -106,6 +106,9 @@
         },
         "englishCoach.requestTimeoutSeconds": { "type": "number", "default": 45 },
         "englishCoach.maxOutputTokens": { "type": "number", "default": 4096 },
+        "englishCoach.qwen.enabled": { "type": "boolean", "default": true },
+        "englishCoach.qwen.baseURL": { "type": "string", "default": "https://dashscope.aliyuncs.com/compatible-mode/v1" },
+        "englishCoach.qwen.model": { "type": "string", "default": "qwen-plus" },
         "englishCoach.deepseek.enabled": { "type": "boolean", "default": true },
         "englishCoach.deepseek.baseURL": { "type": "string", "default": "https://api.deepseek.com/anthropic" },
         "englishCoach.deepseek.model": { "type": "string", "default": "deepseek-v4-flash" },

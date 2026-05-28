@@ -9,6 +9,10 @@ describe("resolveModel", () => {
   it("returns the custom model for custom tier", () => {
     expect(resolveModel("openai", "custom", "my-model")).toBe("my-model");
   });
+  it("resolves Qwen models", () => {
+    expect(resolveModel("qwen", "fast", "")).toBe("qwen-plus");
+    expect(resolveModel("qwen", "pro", "")).toBe("qwen-max");
+  });
 });
 
 describe("getTierLabel", () => {

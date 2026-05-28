@@ -6,9 +6,9 @@ with a Simplified-Chinese explanation of *why* the new version is more natural.
 ## Features
 - **Coach mode** — paste/type English → idiomatic rewrite + 中文讲解 (word choice, collocations, idioms, register).
 - **Translate mode** — Chinese (or any source) → target language, no coaching.
-- **Bring your own keys** — DeepSeek, Xiaomi MiMo, Gemini, Kimi, OpenAI. One provider at a time, switchable.
+- **Bring your own keys** — Qwen/DashScope (default), DeepSeek, Xiaomi MiMo, Gemini, Kimi, OpenAI. One provider at a time, switchable.
 - **Clipboard watch** — stage or auto-coach whatever you copy (off by default).
-- **Read aloud** — hear the native version (macOS).
+- **Read aloud** — hear the native version (macOS). The Qwen/DashScope key also powers Qwen-TTS.
 - **Recent history** — every coach/translate is saved to the "Recent" view in the sidebar; click to restore, or copy/delete inline.
 - **@coach in Copilot Chat** — type `@coach <your English>` for a rewrite + explanation inline, or `@coach /translate <text>`.
 

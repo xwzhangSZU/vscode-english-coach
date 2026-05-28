@@ -6,6 +6,7 @@ import { ModelTier, PROVIDER_IDS, ProviderConfig, ProviderId } from "../core/typ
 import { getSecret } from "./secrets";
 
 export const PROVIDER_TITLES: Record<ProviderId, string> = {
+  qwen: "Qwen (DashScope)",
   deepseek: "DeepSeek",
   mimo: "Xiaomi MiMo",
   gemini: "Gemini",
@@ -80,7 +81,7 @@ export async function getTTSConfig(context: vscode.ExtensionContext): Promise<TT
     provider,
     geminiApiKey: (await getSecret(context, "gemini")) ?? "",
     geminiVoice: c.get<string>("tts.geminiVoice") ?? "Kore",
-    dashscopeApiKey: (await getSecret(context, "dashscope")) ?? "",
+    dashscopeApiKey: (await getSecret(context, "qwen")) ?? "",
     qwenModel: c.get<string>("tts.qwenModel") ?? "qwen3-tts-flash",
     qwenVoice: c.get<string>("tts.qwenVoice") ?? "Cherry",
     qwenLanguageType: c.get<string>("tts.qwenLanguageType") ?? "Auto",

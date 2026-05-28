@@ -1,17 +1,17 @@
 import * as vscode from "vscode";
 import { PROVIDER_IDS, ProviderId } from "../core/types";
 
-export type SecretKeyId = ProviderId | "dashscope";
+export type SecretKeyId = ProviderId;
 
 const SECRET_PREFIX = "englishCoach.secret.";
 
 const SECRET_LABELS: Record<SecretKeyId, string> = {
+  qwen: "Qwen / DashScope",
   deepseek: "DeepSeek",
   mimo: "Xiaomi MiMo",
   gemini: "Gemini",
   kimi: "Kimi",
   openai: "OpenAI / ChatGPT",
-  dashscope: "DashScope (Qwen TTS)",
 };
 
 export function getSecret(context: vscode.ExtensionContext, id: SecretKeyId): Thenable<string | undefined> {
@@ -19,7 +19,7 @@ export function getSecret(context: vscode.ExtensionContext, id: SecretKeyId): Th
 }
 
 export async function setApiKeyInteractive(context: vscode.ExtensionContext): Promise<void> {
-  const ids: SecretKeyId[] = [...PROVIDER_IDS, "dashscope"];
+  const ids: SecretKeyId[] = [...PROVIDER_IDS];
   const picked = await vscode.window.showQuickPick(
     ids.map((id) => ({ label: SECRET_LABELS[id], id })),
     { placeHolder: "Which API key do you want to set?" },

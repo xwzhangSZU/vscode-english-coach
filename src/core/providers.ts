@@ -566,7 +566,7 @@ function isModelNotFoundError(message: string): boolean {
  * without a separate setting.
  */
 export function detectProtocol(id: ProviderId, baseURL: string): ProviderAPIProtocol {
-  if (id === "gemini" || id === "openai") return "openai";
+  if (id === "gemini" || id === "openai" || id === "qwen") return "openai";
   const lower = baseURL.toLowerCase();
   if (lower.includes("/anthropic") || lower.includes("/coding")) return "anthropic";
   if (lower.includes("moonshot.") || /\/v1(\/chat\/completions)?\/?$/.test(lower)) return "openai";

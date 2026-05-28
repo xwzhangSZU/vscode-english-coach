@@ -12,6 +12,15 @@ interface ProviderModels {
 }
 
 const MODEL_CATALOG: Record<ProviderId, ProviderModels> = {
+  qwen: {
+    fast: { id: "qwen-plus", title: "Qwen Plus" },
+    pro: { id: "qwen-max", title: "Qwen Max" },
+    all: [
+      { id: "qwen-max", title: "Qwen Max" },
+      { id: "qwen-plus", title: "Qwen Plus" },
+      { id: "qwen-turbo", title: "Qwen Turbo" },
+    ],
+  },
   deepseek: {
     fast: { id: "deepseek-v4-flash", title: "V4 Flash" },
     pro: { id: "deepseek-v4-pro", title: "V4 Pro" },
