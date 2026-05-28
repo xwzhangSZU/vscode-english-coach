@@ -82,7 +82,15 @@ window.addEventListener("message", (event) => {
   } else if (msg.type === "loading") setLoading();
   else if (msg.type === "result") showResult(msg);
   else if (msg.type === "error") showError(msg);
-  else if (msg.type === "setText" || msg.type === "stage") { $("input").value = msg.text; if (msg.type === "stage") $("input").focus(); }
+  else if (msg.type === "restore") {
+    const e = msg.entry;
+    state.mode = e.kind === "translate" ? "translate" : "coach";
+    applyState();
+    send("setState", { key: "mode", value: state.mode });
+    $("input").value = e.source;
+    if (state.mode === "translate") showResult({ mode: "translate", translation: e.output });
+    else showResult({ mode: "coach", rewritten: e.output, why: e.why });
+  } else if (msg.type === "setText" || msg.type === "stage") { $("input").value = msg.text; if (msg.type === "stage") $("input").focus(); }
 });
 
 document.addEventListener("DOMContentLoaded", () => {

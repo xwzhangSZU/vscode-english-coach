@@ -15,6 +15,8 @@ import {
 } from "../config";
 import { readAloud } from "../audio";
 import { loadUiState, saveUiState, UiState } from "../settings-store";
+import { HistoryEntry } from "../../core/history";
+import { HistoryStore } from "../history";
 
 const TONE_OPTIONS: RewriteTone[] = ["natural", "casual", "formal", "concise"];
 
@@ -24,7 +26,10 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
   public onWatchToggle?: (enabled: boolean) => void;
   public onVisibilityChange?: () => void;
 
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  constructor(
+    private readonly context: vscode.ExtensionContext,
+    private readonly history: HistoryStore,
+  ) {}
 
   resolveWebviewView(webviewView: vscode.WebviewView): void {
     this.view = webviewView;
@@ -112,6 +117,11 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
     await this.handleCoach(text, state.tone, providerId);
   }
 
+  public restoreEntry(entry: HistoryEntry): void {
+    this.reveal();
+    this.post({ type: "restore", entry });
+  }
+
   private resolveProvider(providerId: string): ProviderId {
     return getOrderedProviderIds().includes(providerId as ProviderId)
       ? (providerId as ProviderId)
@@ -127,6 +137,14 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
       const config = await getProviderConfig(this.context, id);
       const result = await runRewrite(config, clean, tone, getTimeoutMs(), getMaxOutputTokens());
       this.post({ type: "result", mode: "coach", rewritten: result.rewritten, why: result.why });
+      await this.history.add({
+        kind: "coach",
+        source: clean,
+        output: result.rewritten,
+        why: result.why,
+        provider: PROVIDER_TITLES[id],
+        model: config.model,
+      });
     } catch (e) {
       this.postError(e, id);
     }
@@ -151,6 +169,13 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
       };
       const translation = await translateWithProvider(config, request);
       this.post({ type: "result", mode: "translate", translation });
+      await this.history.add({
+        kind: "translate",
+        source: clean,
+        output: translation,
+        provider: PROVIDER_TITLES[id],
+        model: config.model,
+      });
     } catch (e) {
       this.postError(e, id);
     }

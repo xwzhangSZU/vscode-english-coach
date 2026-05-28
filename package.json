@@ -26,11 +26,8 @@
     },
     "views": {
       "englishCoach": [
-        {
-          "id": "englishCoach.sidebar",
-          "name": "Coach",
-          "type": "webview"
-        }
+        { "id": "englishCoach.sidebar", "name": "Coach", "type": "webview" },
+        { "id": "englishCoach.history", "name": "Recent", "type": "tree" }
       ]
     },
     "commands": [
@@ -45,6 +42,36 @@
       {
         "command": "englishCoach.focus",
         "title": "English Coach: Open Sidebar"
+      },
+      { "command": "englishCoach.history.reload", "title": "English Coach: Reload History Entry" },
+      { "command": "englishCoach.history.copyOutput", "title": "Copy Native Version", "icon": "$(copy)" },
+      { "command": "englishCoach.history.delete", "title": "Delete", "icon": "$(trash)" },
+      { "command": "englishCoach.history.clear", "title": "English Coach: Clear History", "icon": "$(clear-all)" }
+    ],
+    "menus": {
+      "commandPalette": [
+        { "command": "englishCoach.history.reload", "when": "false" },
+        { "command": "englishCoach.history.copyOutput", "when": "false" },
+        { "command": "englishCoach.history.delete", "when": "false" }
+      ],
+      "view/title": [
+        { "command": "englishCoach.history.clear", "when": "view == englishCoach.history", "group": "navigation" }
+      ],
+      "view/item/context": [
+        { "command": "englishCoach.history.copyOutput", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" },
+        { "command": "englishCoach.history.delete", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "englishCoach.coach",
+        "name": "coach",
+        "fullName": "English Coach",
+        "description": "Rewrite into idiomatic English — or use /translate",
+        "isSticky": true,
+        "commands": [
+          { "name": "translate", "description": "Translate to idiomatic English (or another language)" }
+        ]
       }
     ],
     "configuration": {
