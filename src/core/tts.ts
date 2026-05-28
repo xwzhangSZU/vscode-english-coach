@@ -135,7 +135,7 @@ async function synthesizeWithQwen(
   if (!response.ok || data.message || data.code) {
     throw new Error(data.message ?? `Qwen TTS HTTP ${response.status}`);
   }
-  const base64 = data.output?.audio?.data ?? (await fetchUrlAsBase64(data.output?.audio?.url, signal));
+  const base64 = data.output?.audio?.data || (await fetchUrlAsBase64(data.output?.audio?.url, signal));
   if (!base64) throw new Error("Qwen TTS returned no audio.");
   return Buffer.from(base64, "base64");
 }
