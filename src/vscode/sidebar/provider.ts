@@ -145,7 +145,7 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
     try {
       const config = await getProviderConfig(this.context, id);
       const result = await runRewrite(config, clean, tone, getTimeoutMs(), getMaxOutputTokens());
-      this.post({ type: "result", mode: "coach", rewritten: result.rewritten, why: result.why });
+      this.post({ type: "result", mode: "coach", rewritten: result.rewritten, why: result.why, source: clean });
       await this.history.add({
         kind: "coach",
         source: clean,
@@ -250,6 +250,7 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
     <button id="read" class="secondary">🔊 Read</button>
     <button id="readSlow" class="secondary">🔊 Slow</button>
   </div>
+  <div id="diffWrap"><div class="section-title">🔁 改了什么</div><div id="diff" class="diff"></div></div>
   <div id="whyWrap"><div class="section-title">💡 为什么更自然</div><div id="why" class="why"></div></div>
   <script nonce="${nonce}" src="${jsUri}"></script>
 </body>

@@ -17,6 +17,7 @@ function applyState() {
   $("toneRow").classList.toggle("hidden", translate);
   $("langRow").classList.toggle("hidden", !translate);
   $("whyWrap").classList.toggle("hidden", translate);
+  $("diffWrap").classList.toggle("hidden", translate);
   $("coach").textContent = translate ? "Translate (⌘↵)" : "Coach (⌘↵)";
 }
 
@@ -27,17 +28,51 @@ function setLoading() {
   $("resultActions").classList.add("hidden");
 }
 
+function wordDiff(a, b) {
+  const A = a.trim().split(/\s+/).filter(Boolean);
+  const B = b.trim().split(/\s+/).filter(Boolean);
+  const n = A.length, m = B.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--)
+    for (let j = m - 1; j >= 0; j--)
+      dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  const out = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (A[i] === B[j]) { out.push({ t: "same", w: A[i] }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ t: "del", w: A[i] }); i++; }
+    else { out.push({ t: "ins", w: B[j] }); j++; }
+  }
+  while (i < n) out.push({ t: "del", w: A[i++] });
+  while (j < m) out.push({ t: "ins", w: B[j++] });
+  return out;
+}
+
+function renderDiff(source, rewritten) {
+  const el = $("diff");
+  el.innerHTML = "";
+  if (!source) return;
+  for (const part of wordDiff(source, rewritten)) {
+    const span = document.createElement("span");
+    span.className = part.t;
+    span.textContent = part.w + " ";
+    el.appendChild(span);
+  }
+}
+
 function showResult(msg) {
   if (msg.mode === "translate") {
     lastNative = msg.translation || "";
     $("native").textContent = lastNative;
     $("native").className = "native";
     $("why").textContent = "";
+    $("diff").textContent = "";
   } else {
     lastNative = msg.rewritten || "";
     $("native").textContent = lastNative;
     $("native").className = "native";
     $("why").textContent = msg.why || "";
+    renderDiff(msg.source || "", lastNative);
   }
   $("resultActions").classList.toggle("hidden", !lastNative);
 }
@@ -89,7 +124,7 @@ window.addEventListener("message", (event) => {
     send("setState", { key: "mode", value: state.mode });
     $("input").value = e.source;
     if (state.mode === "translate") showResult({ mode: "translate", translation: e.output });
-    else showResult({ mode: "coach", rewritten: e.output, why: e.why });
+    else showResult({ mode: "coach", rewritten: e.output, why: e.why, source: e.source });
   } else if (msg.type === "setText" || msg.type === "stage") { $("input").value = msg.text; if (msg.type === "stage") $("input").focus(); }
 });
 

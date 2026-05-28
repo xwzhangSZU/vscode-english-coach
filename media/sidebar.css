@@ -12,6 +12,10 @@ hr { border: none; border-top: 1px solid var(--vscode-panel-border); margin: 8px
 .section-title { font-weight: 600; margin: 4px 0; }
 .native { white-space: pre-wrap; padding: 6px; background: var(--vscode-textBlockQuote-background); border-left: 3px solid var(--vscode-textBlockQuote-border); }
 .why { white-space: pre-wrap; }
+.diff { white-space: pre-wrap; line-height: 1.6; padding: 6px 0; }
+.diff .del { color: var(--vscode-errorForeground); text-decoration: line-through; opacity: 0.7; }
+.diff .ins { color: var(--vscode-charts-green, #3fb950); font-weight: 600; }
+.diff .same { opacity: 0.85; }
 .muted { opacity: 0.7; font-style: italic; }
 .error { color: var(--vscode-errorForeground); }
 .error button { margin-top: 6px; }
