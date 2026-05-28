@@ -24,6 +24,7 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "englishCoach.sidebar";
   private view?: vscode.WebviewView;
   private pendingRestore?: HistoryEntry;
+  private pendingReview?: HistoryEntry[];
   public onWatchToggle?: (enabled: boolean) => void;
   public onVisibilityChange?: () => void;
 
@@ -67,6 +68,10 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
       this.post({ type: "restore", entry: this.pendingRestore });
       this.pendingRestore = undefined;
     }
+    if (this.pendingReview) {
+      this.post({ type: "review", cards: this.pendingReview });
+      this.pendingReview = undefined;
+    }
   }
 
   private async onMessage(msg: any): Promise<void> {
@@ -87,6 +92,9 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
         return;
       case "setApiKey":
         await vscode.commands.executeCommand("englishCoach.setApiKey");
+        return;
+      case "star":
+        if (typeof msg.id === "string") await this.history.toggleStar(msg.id);
         return;
       case "fromClipboard": {
         const text = normalizeInputText(await vscode.env.clipboard.readText());
@@ -131,6 +139,16 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
     this.post({ type: "restore", entry });
   }
 
+  public startReview(): void {
+    const cards = this.history.loadStarred();
+    this.reveal();
+    if (!this.view) {
+      this.pendingReview = cards;
+      return;
+    }
+    this.post({ type: "review", cards });
+  }
+
   private resolveProvider(providerId: string): ProviderId {
     return getOrderedProviderIds().includes(providerId as ProviderId)
       ? (providerId as ProviderId)
@@ -145,8 +163,7 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
     try {
       const config = await getProviderConfig(this.context, id);
       const result = await runRewrite(config, clean, tone, getTimeoutMs(), getMaxOutputTokens());
-      this.post({ type: "result", mode: "coach", rewritten: result.rewritten, why: result.why, source: clean });
-      await this.history.add({
+      const entryId = await this.history.add({
         kind: "coach",
         source: clean,
         output: result.rewritten,
@@ -154,6 +171,7 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
         provider: PROVIDER_TITLES[id],
         model: config.model,
       });
+      this.post({ type: "result", mode: "coach", rewritten: result.rewritten, why: result.why, source: clean, entryId });
     } catch (e) {
       this.postError(e, id);
     }
@@ -177,14 +195,14 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
         maxOutputTokens: getMaxOutputTokens(),
       };
       const translation = await translateWithProvider(config, request);
-      this.post({ type: "result", mode: "translate", translation });
-      await this.history.add({
+      const entryId = await this.history.add({
         kind: "translate",
         source: clean,
         output: translation,
         provider: PROVIDER_TITLES[id],
         model: config.model,
       });
+      this.post({ type: "result", mode: "translate", translation, entryId });
     } catch (e) {
       this.postError(e, id);
     }
@@ -246,12 +264,31 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
   <div class="section-title">✨ Native version</div>
   <div id="native" class="native muted">Your idiomatic version will appear here.</div>
   <div class="actions hidden" id="resultActions">
+    <button id="star" class="secondary">⭐ 收藏</button>
     <button id="copy" class="secondary">Copy</button>
     <button id="read" class="secondary">🔊 Read</button>
     <button id="readSlow" class="secondary">🔊 Slow</button>
   </div>
   <div id="diffWrap"><div class="section-title">🔁 改了什么</div><div id="diff" class="diff"></div></div>
   <div id="whyWrap"><div class="section-title">💡 为什么更自然</div><div id="why" class="why"></div></div>
+  <div id="reviewWrap" class="hidden">
+    <div class="row">
+      <strong style="flex:1">复习错题本 <span id="reviewProgress" class="muted"></span></strong>
+      <button id="reviewExit" class="secondary">退出</button>
+    </div>
+    <div class="section-title">📝 你写的</div>
+    <div id="reviewSource" class="native"></div>
+    <div id="reviewAnswer" class="hidden">
+      <div class="section-title">✨ 地道版本</div>
+      <div id="reviewNative" class="native"></div>
+      <div id="reviewWhy" class="why"></div>
+    </div>
+    <div class="actions">
+      <button id="reviewReveal">显示答案</button>
+      <button id="reviewNext" class="secondary">下一张</button>
+      <button id="reviewGotit" class="secondary">记住了 ✅</button>
+    </div>
+  </div>
   <script nonce="${nonce}" src="${jsUri}"></script>
 </body>
 </html>`;

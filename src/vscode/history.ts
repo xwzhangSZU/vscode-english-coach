@@ -16,10 +16,15 @@ export class HistoryStore {
     return Array.isArray(raw) ? raw.filter(isHistoryEntry) : [];
   }
 
-  async add(entry: NewHistoryEntry): Promise<void> {
+  loadStarred(): HistoryEntry[] {
+    return this.load().filter((e) => e.starred);
+  }
+
+  /** Append an entry and return its id (or undefined if it was empty and skipped). */
+  async add(entry: NewHistoryEntry): Promise<string | undefined> {
     const source = entry.source.trim();
     const output = entry.output.trim();
-    if (!source || !output) return;
+    if (!source || !output) return undefined;
     const now = Date.now();
     const full: HistoryEntry = {
       ...entry,
@@ -29,6 +34,15 @@ export class HistoryStore {
       createdAt: now,
     };
     await this.context.globalState.update(KEY, mergeHistory(this.load(), full));
+    this._onDidChange.fire();
+    return full.id;
+  }
+
+  async toggleStar(id: string): Promise<void> {
+    await this.context.globalState.update(
+      KEY,
+      this.load().map((e) => (e.id === id ? { ...e, starred: !e.starred } : e)),
+    );
     this._onDidChange.fire();
   }
 

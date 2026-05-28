@@ -20,3 +20,4 @@ hr { border: none; border-top: 1px solid var(--vscode-panel-border); margin: 8px
 .error { color: var(--vscode-errorForeground); }
 .error button { margin-top: 6px; }
 .hidden { display: none; }
+#reviewWrap { position: fixed; inset: 0; background: var(--vscode-sideBar-background, var(--vscode-editor-background)); padding: 8px 10px; overflow: auto; }

@@ -33,7 +33,11 @@ export function activate(context: vscode.ExtensionContext): void {
       provider.reveal();
       await provider.coachText(text);
     }),
+    vscode.commands.registerCommand("englishCoach.reviewDeck", () => provider.startReview()),
     vscode.commands.registerCommand("englishCoach.history.reload", (entry: HistoryEntry) => provider.restoreEntry(entry)),
+    vscode.commands.registerCommand("englishCoach.history.star", async (entry: HistoryEntry) => {
+      await history.toggleStar(entry.id);
+    }),
     vscode.commands.registerCommand("englishCoach.history.copyOutput", async (entry: HistoryEntry) => {
       await vscode.env.clipboard.writeText(entry.output);
       void vscode.window.showInformationMessage("Copied the native version.");

@@ -18,7 +18,9 @@ export class HistoryTreeProvider implements vscode.TreeDataProvider<HistoryEntry
       `**You:** ${entry.source}\n\n**Native:** ${entry.output}${entry.why ? `\n\n${entry.why}` : ""}`,
     );
     item.contextValue = "historyEntry";
-    item.iconPath = new vscode.ThemeIcon(entry.kind === "coach" ? "sparkle" : "globe");
+    item.iconPath = entry.starred
+      ? new vscode.ThemeIcon("star-full")
+      : new vscode.ThemeIcon(entry.kind === "coach" ? "sparkle" : "globe");
     item.command = { command: "englishCoach.history.reload", title: "Reload in Coach", arguments: [entry] };
     return item;
   }

@@ -1,6 +1,10 @@
 const vscode = acquireVsCodeApi();
 let state = { mode: "coach", tone: "natural", providerId: "", targetLanguage: "auto", watchEnabled: false, watchMode: "stage" };
 let lastNative = "";
+let currentEntryId = null;
+let currentStarred = false;
+let reviewCards = [];
+let reviewIdx = 0;
 
 const $ = (id) => document.getElementById(id);
 
@@ -61,6 +65,8 @@ function renderDiff(source, rewritten) {
 }
 
 function showResult(msg) {
+  currentEntryId = msg.entryId || null;
+  currentStarred = false;
   if (msg.mode === "translate") {
     lastNative = msg.translation || "";
     $("native").textContent = lastNative;
@@ -75,6 +81,53 @@ function showResult(msg) {
     renderDiff(msg.source || "", lastNative);
   }
   $("resultActions").classList.toggle("hidden", !lastNative);
+  updateStar();
+}
+
+function updateStar() {
+  const btn = $("star");
+  btn.textContent = currentStarred ? "✅ 已收藏" : "⭐ 收藏";
+  btn.classList.toggle("hidden", !currentEntryId);
+}
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startReview(cards) {
+  reviewCards = shuffle((cards || []).slice());
+  reviewIdx = 0;
+  const empty = reviewCards.length === 0;
+  $("reviewReveal").classList.toggle("hidden", empty);
+  $("reviewNext").classList.toggle("hidden", empty);
+  $("reviewGotit").classList.toggle("hidden", empty);
+  if (empty) {
+    $("reviewProgress").textContent = "";
+    $("reviewSource").textContent = "还没有收藏的句子。在教练结果里点 ⭐ 收藏,再来复习。";
+    $("reviewAnswer").classList.add("hidden");
+  } else {
+    showReviewCard();
+  }
+  $("reviewWrap").classList.remove("hidden");
+}
+
+function showReviewCard() {
+  const c = reviewCards[reviewIdx];
+  $("reviewProgress").textContent = `(${reviewIdx + 1}/${reviewCards.length})`;
+  $("reviewSource").textContent = c.source;
+  $("reviewNative").textContent = c.output;
+  $("reviewWhy").textContent = c.why || "";
+  $("reviewAnswer").classList.add("hidden");
+}
+
+function reviewNext() {
+  if (!reviewCards.length) return;
+  reviewIdx = (reviewIdx + 1) % reviewCards.length;
+  showReviewCard();
 }
 
 function showError(msg) {
@@ -125,7 +178,8 @@ window.addEventListener("message", (event) => {
     $("input").value = e.source;
     if (state.mode === "translate") showResult({ mode: "translate", translation: e.output });
     else showResult({ mode: "coach", rewritten: e.output, why: e.why, source: e.source });
-  } else if (msg.type === "setText" || msg.type === "stage") { $("input").value = msg.text; if (msg.type === "stage") $("input").focus(); }
+  } else if (msg.type === "review") startReview(msg.cards);
+  else if (msg.type === "setText" || msg.type === "stage") { $("input").value = msg.text; if (msg.type === "stage") $("input").focus(); }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -142,5 +196,18 @@ document.addEventListener("DOMContentLoaded", () => {
   $("targetLanguage").onchange = (e) => { state.targetLanguage = e.target.value; send("setState", { key: "targetLanguage", value: state.targetLanguage }); };
   $("watchEnabled").onchange = (e) => { state.watchEnabled = e.target.checked; send("toggleWatch", { enabled: state.watchEnabled }); };
   $("watchMode").onchange = (e) => { state.watchMode = e.target.value; send("setState", { key: "watchMode", value: state.watchMode }); };
+  $("star").onclick = () => { if (!currentEntryId) return; currentStarred = !currentStarred; send("star", { id: currentEntryId }); updateStar(); };
+  $("reviewReveal").onclick = () => $("reviewAnswer").classList.remove("hidden");
+  $("reviewNext").onclick = reviewNext;
+  $("reviewExit").onclick = () => $("reviewWrap").classList.add("hidden");
+  $("reviewGotit").onclick = () => {
+    const c = reviewCards[reviewIdx];
+    if (!c) return;
+    send("star", { id: c.id });
+    reviewCards.splice(reviewIdx, 1);
+    if (!reviewCards.length) { $("reviewWrap").classList.add("hidden"); return; }
+    if (reviewIdx >= reviewCards.length) reviewIdx = 0;
+    showReviewCard();
+  };
   send("ready", {});
 });

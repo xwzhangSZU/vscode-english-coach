@@ -26,6 +26,22 @@ describe("mergeHistory", () => {
     expect(out[0].id).toBe("new");
     expect(out.map((e) => e.id)).not.toContain("e2");
   });
+  it("keeps starred entries beyond the cap (the review deck never ages out)", () => {
+    const existing = [
+      entry({ id: "star", source: "kept", starred: true }),
+      ...Array.from({ length: 3 }, (_, i) => entry({ id: `e${i}`, source: `s${i}` })),
+    ];
+    const out = mergeHistory(existing, entry({ id: "new", source: "new" }), 2);
+    expect(out.map((e) => e.id)).toContain("star"); // survives despite cap=2
+    expect(out.filter((e) => !e.starred)).toHaveLength(2); // only unstarred is capped
+  });
+  it("re-coaching a starred pair keeps the star", () => {
+    const existing = [entry({ id: "old", source: "hi", output: "Hi.", starred: true })];
+    const out = mergeHistory(existing, entry({ id: "new", source: "hi", output: "Hi." }));
+    expect(out).toHaveLength(1);
+    expect(out[0].id).toBe("new");
+    expect(out[0].starred).toBe(true);
+  });
 });
 
 describe("isHistoryEntry", () => {
