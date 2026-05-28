@@ -9,6 +9,8 @@ with a Simplified-Chinese explanation of *why* the new version is more natural.
 - **Bring your own keys** — DeepSeek, Xiaomi MiMo, Gemini, Kimi, OpenAI. One provider at a time, switchable.
 - **Clipboard watch** — stage or auto-coach whatever you copy (off by default).
 - **Read aloud** — hear the native version (macOS).
+- **Recent history** — every coach/translate is saved to the "Recent" view in the sidebar; click to restore, or copy/delete inline.
+- **@coach in Copilot Chat** — type `@coach <your English>` for a rewrite + explanation inline, or `@coach /translate <text>`.
 
 ## Setup
 1. Run **English Coach: Set API Key** and add at least one provider key.
