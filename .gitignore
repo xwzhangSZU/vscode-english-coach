@@ -1,7 +1,4 @@
 node_modules
-dist
-.build
-.firecrawl
+out
+*.vsix
 .DS_Store
-assets/recognizeText
-raycast-env.d.ts

@@ -1,0 +1,458 @@
+[
+  {
+    "contents" : {
+      "guid" : "Workspace:/Users/xianweizhang/Projects/raycast-ai-translate@11",
+      "name" : "recognizeText",
+      "path" : "/Users/xianweizhang/Projects/raycast-ai-translate",
+      "projects" : [
+        "03dd5fd835224f718281258175507773a13268032642ef44ed66199f10b9a179",
+        "febeb2b6e08bdbc8514eadad5188c184fbc7d383c900fe066fce8415db06f7c6"
+      ]
+    },
+    "signature" : "2249691b8d1a783b4783c7bf5c295d87aaaf1721158f1a8b6cfa532a54d25ef4",
+    "type" : "workspace"
+  },
+  {
+    "contents" : {
+      "buildConfigurations" : [
+        {
+          "buildSettings" : {
+            "CLANG_ENABLE_OBJC_ARC" : "YES",
+            "CODE_SIGNING_REQUIRED" : "NO",
+            "CODE_SIGN_IDENTITY" : "",
+            "COPY_PHASE_STRIP" : "NO",
+            "DEBUG_INFORMATION_FORMAT" : "dwarf",
+            "DRIVERKIT_DEPLOYMENT_TARGET" : "19.0",
+            "DYLIB_INSTALL_NAME_BASE" : "@rpath",
+            "ENABLE_NS_ASSERTIONS" : "YES",
+            "ENABLE_TESTABILITY" : "YES",
+            "ENABLE_TESTING_SEARCH_PATHS" : "YES",
+            "ENTITLEMENTS_REQUIRED" : "NO",
+            "FRAMEWORK_SEARCH_PATHS[__platform_filter=ios;ios-simulator]" : [
+              "$(inherited)",
+              "$(PLATFORM_DIR)/Developer/Library/Frameworks"
+            ],
+            "FRAMEWORK_SEARCH_PATHS[__platform_filter=macos]" : [
+              "$(inherited)",
+              "$(PLATFORM_DIR)/Developer/Library/Frameworks"
+            ],
+            "FRAMEWORK_SEARCH_PATHS[__platform_filter=tvos;tvos-simulator]" : [
+              "$(inherited)",
+              "$(PLATFORM_DIR)/Developer/Library/Frameworks"
+            ],
+            "GCC_OPTIMIZATION_LEVEL" : "0",
+            "GCC_PREPROCESSOR_DEFINITIONS" : [
+              "$(inherited)",
+              "SWIFT_PACKAGE",
+              "DEBUG=1"
+            ],
+            "IPHONEOS_DEPLOYMENT_TARGET" : "12.0",
+            "IPHONEOS_DEPLOYMENT_TARGET[__platform_filter=ios-maccatalyst]" : "13.0",
+            "KEEP_PRIVATE_EXTERNS" : "NO",
+            "MACOSX_DEPLOYMENT_TARGET" : "10.15",
+            "ONLY_ACTIVE_ARCH" : "YES",
+            "OTHER_LDRFLAGS" : [
+
+            ],
+            "PRODUCT_NAME" : "$(TARGET_NAME)",
+            "SDKROOT" : "auto",
+            "SDK_VARIANT" : "auto",
+            "SKIP_INSTALL" : "YES",
+            "SUPPORTED_PLATFORMS" : [
+              "$(AVAILABLE_PLATFORMS)"
+            ],
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS" : [
+              "$(inherited)",
+              "SWIFT_PACKAGE",
+              "DEBUG"
+            ],
+            "SWIFT_INSTALL_OBJC_HEADER" : "NO",
+            "SWIFT_OBJC_INTERFACE_HEADER_NAME" : "",
+            "SWIFT_OPTIMIZATION_LEVEL" : "-Onone",
+            "TVOS_DEPLOYMENT_TARGET" : "12.0",
+            "USE_HEADERMAP" : "NO",
+            "WATCHOS_DEPLOYMENT_TARGET" : "4.0",
+            "XROS_DEPLOYMENT_TARGET" : "1.0"
+          },
+          "guid" : "PACKAGE:/Users/xianweizhang/Projects/raycast-ai-translate::BUILDCONFIG_Debug",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Debug"
+        },
+        {
+          "buildSettings" : {
+            "CLANG_ENABLE_OBJC_ARC" : "YES",
+            "CODE_SIGNING_REQUIRED" : "NO",
+            "CODE_SIGN_IDENTITY" : "",
+            "COPY_PHASE_STRIP" : "YES",
+            "DEBUG_INFORMATION_FORMAT" : "dwarf-with-dsym",
+            "DRIVERKIT_DEPLOYMENT_TARGET" : "19.0",
+            "DYLIB_INSTALL_NAME_BASE" : "@rpath",
+            "ENABLE_TESTING_SEARCH_PATHS" : "YES",
+            "ENTITLEMENTS_REQUIRED" : "NO",
+            "FRAMEWORK_SEARCH_PATHS[__platform_filter=ios;ios-simulator]" : [
+              "$(inherited)",
+              "$(PLATFORM_DIR)/Developer/Library/Frameworks"
+            ],
+            "FRAMEWORK_SEARCH_PATHS[__platform_filter=macos]" : [
+              "$(inherited)",
+              "$(PLATFORM_DIR)/Developer/Library/Frameworks"
+            ],
+            "FRAMEWORK_SEARCH_PATHS[__platform_filter=tvos;tvos-simulator]" : [
+              "$(inherited)",
+              "$(PLATFORM_DIR)/Developer/Library/Frameworks"
+            ],
+            "GCC_OPTIMIZATION_LEVEL" : "s",
+            "GCC_PREPROCESSOR_DEFINITIONS" : [
+              "$(inherited)",
+              "SWIFT_PACKAGE"
+            ],
+            "IPHONEOS_DEPLOYMENT_TARGET" : "12.0",
+            "IPHONEOS_DEPLOYMENT_TARGET[__platform_filter=ios-maccatalyst]" : "13.0",
+            "KEEP_PRIVATE_EXTERNS" : "NO",
+            "MACOSX_DEPLOYMENT_TARGET" : "10.15",
+            "OTHER_LDRFLAGS" : [
+
+            ],
+            "PRODUCT_NAME" : "$(TARGET_NAME)",
+            "SDKROOT" : "auto",
+            "SDK_VARIANT" : "auto",
+            "SKIP_INSTALL" : "YES",
+            "SUPPORTED_PLATFORMS" : [
+              "$(AVAILABLE_PLATFORMS)"
+            ],
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS" : [
+              "$(inherited)",
+              "SWIFT_PACKAGE"
+            ],
+            "SWIFT_INSTALL_OBJC_HEADER" : "NO",
+            "SWIFT_OBJC_INTERFACE_HEADER_NAME" : "",
+            "SWIFT_OPTIMIZATION_LEVEL" : "-Owholemodule",
+            "TVOS_DEPLOYMENT_TARGET" : "12.0",
+            "USE_HEADERMAP" : "NO",
+            "WATCHOS_DEPLOYMENT_TARGET" : "4.0",
+            "XROS_DEPLOYMENT_TARGET" : "1.0"
+          },
+          "guid" : "PACKAGE:/Users/xianweizhang/Projects/raycast-ai-translate::BUILDCONFIG_Release",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Release"
+        }
+      ],
+      "defaultConfigurationName" : "Release",
+      "developmentRegion" : "en",
+      "groupTree" : {
+        "children" : [
+          {
+            "children" : [
+              {
+                "fileType" : "sourcecode.swift",
+                "guid" : "PACKAGE:/Users/xianweizhang/Projects/raycast-ai-translate::MAINGROUP::REF_0::REF_0",
+                "name" : "main.swift",
+                "path" : "main.swift",
+                "sourceTree" : "<group>",
+                "type" : "file"
+              }
+            ],
+            "guid" : "PACKAGE:/Users/xianweizhang/Projects/raycast-ai-translate::MAINGROUP::REF_0",
+            "name" : "Sources/recognizeText",
+            "path" : "Sources/recognizeText",
+            "sourceTree" : "<group>",
+            "type" : "group"
+          }
+        ],
+        "guid" : "PACKAGE:/Users/xianweizhang/Projects/raycast-ai-translate::MAINGROUP",
+        "name" : "",
+        "path" : "",
+        "sourceTree" : "<group>",
+        "type" : "group"
+      },
+      "guid" : "PACKAGE:/Users/xianweizhang/Projects/raycast-ai-translate@11",
+      "path" : "/Users/xianweizhang/Projects/raycast-ai-translate",
+      "projectDirectory" : "/Users/xianweizhang/Projects/raycast-ai-translate",
+      "projectIsPackage" : "true",
+      "projectName" : "recognizeText",
+      "targets" : [
+        "e6c709045223c70dc551dd0f7a6b3b8fc7408c138471e013ea4967a113422871"
+      ]
+    },
+    "signature" : "03dd5fd835224f718281258175507773a13268032642ef44ed66199f10b9a179",
+    "type" : "project"
+  },
+  {
+    "contents" : {
+      "buildConfigurations" : [
+        {
+          "buildSettings" : {
+            "CLANG_ENABLE_MODULES" : "YES",
+            "DEFINES_MODULE" : "YES",
+            "INSTALL_PATH" : "/usr/local/bin",
+            "LD_RUNPATH_SEARCH_PATHS" : [
+              "$(inherited)",
+              "@executable_path/../lib"
+            ],
+            "LIBRARY_SEARCH_PATHS" : [
+              "$(inherited)",
+              "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
+            ],
+            "PACKAGE_RESOURCE_TARGET_KIND" : "regular",
+            "PRODUCT_BUNDLE_IDENTIFIER" : "recognizeText",
+            "PRODUCT_MODULE_NAME" : "recognizeText",
+            "PRODUCT_NAME" : "$(TARGET_NAME)",
+            "SKIP_INSTALL" : "NO",
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS" : [
+              "$(inherited)",
+              "SWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE"
+            ],
+            "SWIFT_VERSION" : "5",
+            "TARGET_NAME" : "recognizeText"
+          },
+          "guid" : "PACKAGE-PRODUCT:recognizeText::BUILDCONFIG_Debug",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Debug"
+        },
+        {
+          "buildSettings" : {
+            "CLANG_ENABLE_MODULES" : "YES",
+            "DEFINES_MODULE" : "YES",
+            "INSTALL_PATH" : "/usr/local/bin",
+            "LD_RUNPATH_SEARCH_PATHS" : [
+              "$(inherited)",
+              "@executable_path/../lib"
+            ],
+            "LIBRARY_SEARCH_PATHS" : [
+              "$(inherited)",
+              "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx"
+            ],
+            "PACKAGE_RESOURCE_TARGET_KIND" : "regular",
+            "PRODUCT_BUNDLE_IDENTIFIER" : "recognizeText",
+            "PRODUCT_MODULE_NAME" : "recognizeText",
+            "PRODUCT_NAME" : "$(TARGET_NAME)",
+            "SKIP_INSTALL" : "NO",
+            "SWIFT_ACTIVE_COMPILATION_CONDITIONS" : [
+              "$(inherited)",
+              "SWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE"
+            ],
+            "SWIFT_VERSION" : "5",
+            "TARGET_NAME" : "recognizeText"
+          },
+          "guid" : "PACKAGE-PRODUCT:recognizeText::BUILDCONFIG_Release",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Release"
+        }
+      ],
+      "buildPhases" : [
+        {
+          "buildFiles" : [
+            {
+              "fileReference" : "PACKAGE:/Users/xianweizhang/Projects/raycast-ai-translate::MAINGROUP::REF_0::REF_0",
+              "guid" : "PACKAGE-PRODUCT:recognizeText::BUILDPHASE_0::0",
+              "platformFilters" : [
+
+              ]
+            }
+          ],
+          "guid" : "PACKAGE-PRODUCT:recognizeText::BUILDPHASE_0",
+          "type" : "com.apple.buildphase.sources"
+        }
+      ],
+      "buildRules" : [
+
+      ],
+      "dependencies" : [
+
+      ],
+      "guid" : "PACKAGE-PRODUCT:recognizeText@11",
+      "impartedBuildProperties" : {
+        "buildSettings" : {
+
+        }
+      },
+      "name" : "recognizeText_-6155E60A070BF988_PackageProduct",
+      "productReference" : {
+        "guid" : "PRODUCTREF-PACKAGE-PRODUCT:recognizeText",
+        "name" : "recognizeText",
+        "type" : "file"
+      },
+      "productTypeIdentifier" : "com.apple.product-type.tool",
+      "type" : "standard"
+    },
+    "signature" : "e6c709045223c70dc551dd0f7a6b3b8fc7408c138471e013ea4967a113422871",
+    "type" : "target"
+  },
+  {
+    "contents" : {
+      "buildConfigurations" : [
+        {
+          "buildSettings" : {
+            "PRODUCT_NAME" : "$(TARGET_NAME)",
+            "SDKROOT" : "auto",
+            "SDK_VARIANT" : "auto",
+            "SKIP_INSTALL" : "YES",
+            "SUPPORTED_PLATFORMS" : [
+              "$(AVAILABLE_PLATFORMS)"
+            ]
+          },
+          "guid" : "AGGREGATE::BUILDCONFIG_Debug",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Debug"
+        },
+        {
+          "buildSettings" : {
+            "PRODUCT_NAME" : "$(TARGET_NAME)",
+            "SDKROOT" : "auto",
+            "SDK_VARIANT" : "auto",
+            "SKIP_INSTALL" : "YES",
+            "SUPPORTED_PLATFORMS" : [
+              "$(AVAILABLE_PLATFORMS)"
+            ]
+          },
+          "guid" : "AGGREGATE::BUILDCONFIG_Release",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Release"
+        }
+      ],
+      "defaultConfigurationName" : "Release",
+      "developmentRegion" : "en",
+      "groupTree" : {
+        "children" : [
+
+        ],
+        "guid" : "AGGREGATE::MAINGROUP",
+        "name" : "",
+        "path" : "",
+        "sourceTree" : "<group>",
+        "type" : "group"
+      },
+      "guid" : "AGGREGATE@11",
+      "path" : "/Users/xianweizhang/Projects/raycast-ai-translate",
+      "projectDirectory" : "/Users/xianweizhang/Projects/raycast-ai-translate",
+      "projectIsPackage" : "true",
+      "projectName" : "Aggregate",
+      "targets" : [
+        "00a050c363bd7dc28a278e9fbcc1ada8c9cb196f0d4a4fc8f6083d5ca1b79b8f",
+        "bee6b2df9b331857269bc5fc97dee7d88eaee78093484d8b2f05b3e515594a5a"
+      ]
+    },
+    "signature" : "febeb2b6e08bdbc8514eadad5188c184fbc7d383c900fe066fce8415db06f7c6",
+    "type" : "project"
+  },
+  {
+    "contents" : {
+      "buildConfigurations" : [
+        {
+          "buildSettings" : {
+
+          },
+          "guid" : "ALL-EXCLUDING-TESTS::BUILDCONFIG_Debug",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Debug"
+        },
+        {
+          "buildSettings" : {
+
+          },
+          "guid" : "ALL-EXCLUDING-TESTS::BUILDCONFIG_Release",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Release"
+        }
+      ],
+      "buildPhases" : [
+
+      ],
+      "dependencies" : [
+        {
+          "guid" : "PACKAGE-PRODUCT:recognizeText@11"
+        }
+      ],
+      "guid" : "ALL-EXCLUDING-TESTS@11",
+      "impartedBuildProperties" : {
+        "buildSettings" : {
+
+        }
+      },
+      "name" : "AllExcludingTests",
+      "type" : "aggregate"
+    },
+    "signature" : "00a050c363bd7dc28a278e9fbcc1ada8c9cb196f0d4a4fc8f6083d5ca1b79b8f",
+    "type" : "target"
+  },
+  {
+    "contents" : {
+      "buildConfigurations" : [
+        {
+          "buildSettings" : {
+
+          },
+          "guid" : "ALL-INCLUDING-TESTS::BUILDCONFIG_Debug",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Debug"
+        },
+        {
+          "buildSettings" : {
+
+          },
+          "guid" : "ALL-INCLUDING-TESTS::BUILDCONFIG_Release",
+          "impartedBuildProperties" : {
+            "buildSettings" : {
+
+            }
+          },
+          "name" : "Release"
+        }
+      ],
+      "buildPhases" : [
+
+      ],
+      "dependencies" : [
+        {
+          "guid" : "PACKAGE-PRODUCT:recognizeText@11"
+        }
+      ],
+      "guid" : "ALL-INCLUDING-TESTS@11",
+      "impartedBuildProperties" : {
+        "buildSettings" : {
+
+        }
+      },
+      "name" : "AllIncludingTests",
+      "type" : "aggregate"
+    },
+    "signature" : "bee6b2df9b331857269bc5fc97dee7d88eaee78093484d8b2f05b3e515594a5a",
+    "type" : "target"
+  }
+]
