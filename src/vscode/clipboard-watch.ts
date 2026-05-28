@@ -43,7 +43,11 @@ export class ClipboardWatcher {
   }
 
   private async captureBaseline(): Promise<void> {
-    this.last = (await vscode.env.clipboard.readText()) ?? "";
+    try {
+      this.last = (await vscode.env.clipboard.readText()) ?? "";
+    } catch {
+      this.last = "";
+    }
   }
 
   private async tick(): Promise<void> {

@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { setApiKeyInteractive } from "./vscode/secrets";
 import { CoachViewProvider } from "./vscode/sidebar/provider";
 import { ClipboardWatcher } from "./vscode/clipboard-watch";
+import { stopSpeaking } from "./vscode/audio";
 
 export function activate(context: vscode.ExtensionContext): void {
   const provider = new CoachViewProvider(context);
@@ -25,4 +26,6 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 }
 
-export function deactivate(): void {}
+export function deactivate(): void {
+  stopSpeaking();
+}

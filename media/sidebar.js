@@ -17,10 +17,11 @@ function applyState() {
   $("toneRow").classList.toggle("hidden", translate);
   $("langRow").classList.toggle("hidden", !translate);
   $("whyWrap").classList.toggle("hidden", translate);
+  $("coach").textContent = translate ? "Translate (⌘↵)" : "Coach (⌘↵)";
 }
 
 function setLoading() {
-  $("native").textContent = "Coaching…";
+  $("native").textContent = state.mode === "translate" ? "Translating…" : "Coaching…";
   $("native").className = "native muted";
   $("why").textContent = "";
   $("resultActions").classList.add("hidden");

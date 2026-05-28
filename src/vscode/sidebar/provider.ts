@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { randomBytes } from "node:crypto";
 import { LANGUAGE_CHOICES, resolveTargetLanguage, getLanguageTitle } from "../../core/languages";
 import { translateWithProvider, MissingAPIKeyError } from "../../core/providers";
 import { runRewrite } from "../../core/rewrite";
@@ -13,7 +14,7 @@ import {
   getTimeoutMs,
 } from "../config";
 import { readAloud } from "../audio";
-import { loadUiState, saveUiState } from "../settings-store";
+import { loadUiState, saveUiState, UiState } from "../settings-store";
 
 const TONE_OPTIONS: RewriteTone[] = ["natural", "casual", "formal", "concise"];
 
@@ -31,8 +32,8 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, "media")],
     };
-    webviewView.webview.html = this.html(webviewView.webview);
     webviewView.webview.onDidReceiveMessage((msg) => this.onMessage(msg));
+    webviewView.webview.html = this.html(webviewView.webview);
     webviewView.onDidChangeVisibility(() => {
       if (webviewView.visible) this.postInit();
       this.onVisibilityChange?.();
@@ -63,9 +64,13 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
       case "ready":
         this.postInit();
         return;
-      case "setState":
-        await saveUiState(this.context, { [msg.key]: msg.value } as any);
+      case "setState": {
+        const allowedKeys: ReadonlyArray<keyof UiState> = ["mode", "tone", "providerId", "targetLanguage", "watchMode"];
+        if (allowedKeys.includes(msg.key)) {
+          await saveUiState(this.context, { [msg.key]: msg.value } as Partial<UiState>);
+        }
         return;
+      }
       case "toggleWatch":
         await saveUiState(this.context, { watchEnabled: Boolean(msg.enabled) });
         this.onWatchToggle?.(Boolean(msg.enabled));
@@ -218,8 +223,5 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
 }
 
 function getNonce(): string {
-  let text = "";
-  const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 32; i++) text += possible.charAt(Math.floor(Math.random() * possible.length));
-  return text;
+  return randomBytes(16).toString("hex");
 }
