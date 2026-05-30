@@ -290,3 +290,38 @@ function parseJson<T>(text: string): T & { error?: { message?: string } } {
     };
   }
 }
+
+export interface OpenAISpeechConfig {
+  apiKey: string;
+  baseURL: string;       // e.g. https://api.openai.com/v1
+  model: string;         // gpt-4o-mini-tts
+  voice: string;         // marin | cedar | alloy | ...
+  instructions?: string; // steer pace/clarity/accent (ignored by tts-1/-hd)
+  speed?: number;        // 0.25–4.0
+  format?: "mp3" | "wav" | "opus" | "flac" | "pcm";
+  signal?: AbortSignal;
+}
+
+/** Synthesize speech via OpenAI /v1/audio/speech. Returns audio bytes. Throws on failure. */
+export async function synthesizeOpenAISpeech(text: string, cfg: OpenAISpeechConfig): Promise<Buffer> {
+  const url = `${cfg.baseURL.replace(/\/+$/, "")}/audio/speech`;
+  const body: Record<string, unknown> = {
+    model: cfg.model,
+    voice: cfg.voice,
+    input: text,
+    response_format: cfg.format ?? "mp3",
+  };
+  if (cfg.instructions) body.instructions = cfg.instructions;
+  if (typeof cfg.speed === "number") body.speed = cfg.speed;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${cfg.apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: cfg.signal,
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(detail || `OpenAI TTS HTTP ${response.status}`);
+  }
+  return Buffer.from(await response.arrayBuffer());
+}
