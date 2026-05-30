@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Say It Right — Prosody stave styles</title>
+<style>
+  :root {
+    --bg: #1e1e1e; --panel: #252526; --fg: #d4d4d4; --dim: #808080;
+    --stress: #e8a33d; --tone: #4ea1ff; --link: #4ec98a; --nuclear: #ff6b8b; --line: #3a3a3a;
+    --font: -apple-system, "Segoe UI", system-ui, sans-serif;
+    --mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font); margin: 0; padding: 28px 32px 80px; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  .sub { color: var(--dim); margin: 0 0 8px; font-size: 13px; }
+  .legend { color: var(--dim); font-size: 12px; margin: 0 0 24px; }
+  .legend b { color: var(--fg); font-weight: 600; }
+  .swatch-stress { color: var(--stress); } .swatch-tone { color: var(--tone); }
+  .swatch-link { color: var(--link); } .swatch-nuc { color: var(--nuclear); }
+  .card { background: var(--panel); border: 1px solid #333; border-radius: 10px; padding: 20px 24px 26px; margin: 0 0 22px; }
+  .card .tag { display: inline-block; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--tone); border: 1px solid var(--tone); border-radius: 4px; padding: 2px 8px; margin-bottom: 6px; }
+  .card h2 { font-size: 15px; margin: 4px 0 2px; }
+  .card .desc { color: var(--dim); font-size: 13px; margin: 0 0 18px; max-width: 70ch; }
+  .ipa { font-family: var(--mono); color: var(--dim); font-size: 14px; margin-top: 14px; }
+  .pros { color: var(--dim); font-size: 12px; margin-top: 12px; }
+  .pros b { color: var(--link); }
+
+  /* ---------- Variant A: enhanced marks ---------- */
+  .vA { font-size: 30px; line-height: 2.7; }
+  .vA .w { display: inline-flex; flex-direction: column; align-items: center; margin: 0 3px; vertical-align: bottom; }
+  .vA .mk { font-size: 13px; height: 14px; line-height: 14px; }
+  .vA .stress .mk, .vA .nuc .mk { color: var(--stress); }
+  .vA .red .mk { color: var(--dim); }
+  .vA .nuc .t { color: var(--nuclear); text-decoration: underline; text-underline-offset: 5px; font-weight: 600; }
+  .vA .red .t { color: var(--dim); }
+  .vA .ln { color: var(--link); font-size: 22px; align-self: flex-end; margin: 0 -2px 4px; }
+  .vA .arrow { color: var(--tone); font-size: 24px; margin: 0 8px; }
+  .vA .bar { color: #555; margin: 0 6px; }
+
+  /* ---------- Variant B: pitch contour ---------- */
+  .vB svg { display: block; width: 100%; max-width: 720px; height: auto; }
+  .vB .wordrow { display: grid; grid-template-columns: repeat(6, 1fr); max-width: 720px; margin-top: 2px; }
+  .vB .wordrow span { text-align: center; font-size: 22px; }
+  .vB .s { color: var(--fg); font-weight: 600; } .vB .r { color: var(--dim); font-size: 18px; }
+  .vB .n { color: var(--nuclear); font-weight: 700; }
+
+  /* ---------- Variant C: height-mapped stave ---------- */
+  .vC { position: relative; max-width: 640px; height: 150px; }
+  .vC .staff { position: absolute; inset: 0; }
+  .vC .staff i { position: absolute; left: 0; right: 0; height: 1px; background: var(--line); }
+  .vC .words { position: relative; height: 150px; display: flex; align-items: flex-end; gap: 6px; }
+  .vC .w { font-size: 24px; padding: 2px 8px; border-radius: 6px; }
+  .vC .stress { color: var(--stress); font-weight: 600; }
+  .vC .nuc { color: var(--nuclear); font-weight: 700; box-shadow: 0 0 0 1px var(--nuclear); }
+  .vC .red { color: var(--dim); font-size: 19px; }
+  .vC .gap { width: 18px; }
+
+  /* ---------- Variant D: typographic + under-curve ---------- */
+  .vD { line-height: 2.9; }
+  .vD .grp { display: inline-block; position: relative; margin-right: 26px; padding-bottom: 14px; }
+  .vD .grp svg { position: absolute; left: 0; bottom: 0; width: 100%; height: 16px; }
+  .vD .w { font-size: 22px; color: var(--dim); }
+  .vD .stress { font-size: 30px; color: var(--fg); font-weight: 600; }
+  .vD .nuc { font-size: 32px; color: var(--nuclear); font-weight: 700; }
+  .vD .ln { color: var(--link); font-size: 20px; }
+</style>
+</head>
+<body>
+  <h1>Say It Right — pick a prosody stave style</h1>
+  <p class="sub">Same sentence in 4 rendering styles. Tell me the number you want (mix-and-match notes welcome).</p>
+  <p class="legend">
+    Sentence: <b>“Turn it off and on again.”</b> &nbsp;·&nbsp;
+    <span class="swatch-stress">●</span> stressed / <span class="swatch-stress">●●</span>&nbsp;
+    <span class="swatch-nuc">nuclear</span> (the focus word) ·
+    <span style="color:#808080">· reduced</span> ·
+    <span class="swatch-tone">↗ ↘</span> thought-group tone ·
+    <span class="swatch-link">‿</span> connected speech (liaison) ·
+    ‖ thought-group break
+  </p>
+
+  <!-- ===== Variant A ===== -->
+  <div class="card">
+    <span class="tag">Style 1</span>
+    <h2>Enhanced marks (Raycast-style, but colored &amp; interactive)</h2>
+    <p class="desc">The familiar dots-above-words layout from the Raycast version, upgraded with color, a colored/underlined nuclear word, and a real tone arrow per group. Closest to what you already know; lowest risk.</p>
+    <div class="vA">
+      <span class="w stress"><span class="mk">●</span><span class="t">Turn</span></span><span class="ln">‿</span><span class="w red"><span class="mk">·</span><span class="t">it</span></span><span class="ln">‿</span><span class="w nuc"><span class="mk">●</span><span class="t">off</span></span>
+      <span class="arrow">↗</span><span class="bar">‖</span>
+      <span class="w red"><span class="mk">·</span><span class="t">and</span></span><span class="w stress"><span class="mk">●</span><span class="t">on</span></span><span class="ln">‿</span><span class="w nuc"><span class="mk">●</span><span class="t">again</span></span><span class="arrow">↘</span>
+    </div>
+    <div class="ipa">/ˈtɜrn ɪt ˈɔf ‖ ən ˈɑn əˈɡɛn/</div>
+    <p class="pros"><b>Best for:</b> familiarity, dense info, easy to scan word-by-word.</p>
+  </div>
+
+  <!-- ===== Variant B ===== -->
+  <div class="card">
+    <span class="tag">Style 2</span>
+    <h2>Pitch contour (the one Raycast literally cannot draw)</h2>
+    <p class="desc">An actual intonation curve drawn over the words — you see the melody rise and fall. Dots sit on the line at stressed syllables (big = nuclear). This is the strongest “VS Code &gt; Raycast” signature.</p>
+    <div class="vB">
+      <svg viewBox="0 0 720 110" preserveAspectRatio="none" aria-hidden="true">
+        <!-- group 1: rise to nuclear "off" -->
+        <path d="M60,60 Q110,66 160,68 Q210,56 260,34" fill="none" stroke="#4ea1ff" stroke-width="3" stroke-linecap="round"/>
+        <!-- group 2: peak on "again" then fall -->
+        <path d="M420,64 Q470,52 520,44 Q575,34 620,30 Q650,42 668,86" fill="none" stroke="#4ea1ff" stroke-width="3" stroke-linecap="round"/>
+        <!-- stressed dots -->
+        <circle cx="60" cy="60" r="5" fill="#e8a33d"/>
+        <circle cx="260" cy="34" r="8" fill="#ff6b8b"/>
+        <circle cx="520" cy="44" r="5" fill="#e8a33d"/>
+        <circle cx="620" cy="30" r="8" fill="#ff6b8b"/>
+        <text x="340" y="60" fill="#555" font-size="22">‖</text>
+      </svg>
+      <div class="wordrow">
+        <span class="s">Turn</span><span class="r">it</span><span class="n">off</span>
+        <span class="r">and</span><span class="s">on</span><span class="n">again</span>
+      </div>
+    </div>
+    <div class="ipa">/ˈtɜrn ɪt ˈɔf ‖ ən ˈɑn əˈɡɛn/</div>
+    <p class="pros"><b>Best for:</b> hearing-the-melody learners; pairs beautifully with the karaoke word-highlight in a later phase (the dot can ride the curve as it plays).</p>
+  </div>
+
+  <!-- ===== Variant C ===== -->
+  <div class="card">
+    <span class="tag">Style 3</span>
+    <h2>Height-mapped stave (words sit at their pitch)</h2>
+    <p class="desc">Words are placed vertically by pitch/stress — stressed words ride high, reduced words sink, the nuclear word is boxed. Faint staff lines give a “musical notation” feel; spacing hints at rhythm.</p>
+    <div class="vC">
+      <div class="staff"><i style="top:18px"></i><i style="top:56px"></i><i style="top:94px"></i><i style="top:132px"></i></div>
+      <div class="words">
+        <span class="w stress" style="margin-bottom:78px">Turn</span>
+        <span class="w red" style="margin-bottom:18px">it</span>
+        <span class="w nuc" style="margin-bottom:104px">off</span>
+        <span class="gap"></span>
+        <span class="w red" style="margin-bottom:28px">and</span>
+        <span class="w stress" style="margin-bottom:70px">on</span>
+        <span class="w nuc" style="margin-bottom:96px">again</span>
+      </div>
+    </div>
+    <div class="ipa">/ˈtɜrn ɪt ˈɔf ‖ ən ˈɑn əˈɡɛn/</div>
+    <p class="pros"><b>Best for:</b> a spatial, intuitive sense of stress &amp; melody at a glance; very “unlike a text editor.”</p>
+  </div>
+
+  <!-- ===== Variant D ===== -->
+  <div class="card">
+    <span class="tag">Style 4</span>
+    <h2>Typographic + under-curve (clean reading flow)</h2>
+    <p class="desc">No marks above the line. Stress is shown by <b>size and weight</b>, reduced words are dimmed and small, the nuclear word is colored. A small curved underline under each group shows the tone. Reads like prose, scales to long passages.</p>
+    <div class="vD">
+      <span class="grp">
+        <span class="stress">Turn</span> <span class="w">it</span><span class="ln">‿</span> <span class="nuc">off</span>
+        <svg viewBox="0 0 160 16" preserveAspectRatio="none"><path d="M4,12 Q80,12 156,3" fill="none" stroke="#4ea1ff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </span>
+      <span class="grp">
+        <span class="w">and</span> <span class="stress">on</span><span class="ln">‿</span> <span class="nuc">again</span>
+        <svg viewBox="0 0 150 16" preserveAspectRatio="none"><path d="M4,4 Q80,4 146,14" fill="none" stroke="#4ea1ff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </span>
+    </div>
+    <div class="ipa">/ˈtɜrn ɪt ˈɔf ‖ ən ˈɑn əˈɡɛn/</div>
+    <p class="pros"><b>Best for:</b> minimal &amp; modern; best for multi-sentence passages where dots-above would get noisy.</p>
+  </div>
+
+  <p class="legend" style="margin-top:8px">Notes you might give me: “Style 2, but bigger words” · “Style 4 tone-curve + Style 1 dots” · “Style 3 with the contour line of Style 2.”</p>
+</body>
+</html>
