@@ -1,7 +1,7 @@
 {
-  "name": "vscode-say-it-right",
+  "name": "vscode-english-coach",
   "displayName": "Say It Right 英语口语教练",
-  "description": "把任意英文变成发音课:逐句标出重音 / 升降调 / 节奏 / 连读 + 国际音标,配可变速(0.25–4×)、可慢速的范读音陪你跟读复读并导出;同时保留 Qwen / DeepSeek / MiniMax / 小米 MiMo / Gemini / GPT 驱动的地道改写教练与朗读(TTS)。Turn any English into a pronunciation lesson — per-sentence stress, intonation, rhythm and linking with IPA, plus a slow-able model voice to shadow, loop and export; also an idiomatic rewrite coach. Bring your own key.",
+  "description": "英语口语教练 × 发音教练:把你写的英文改写成地道、像母语者的表达并用中文讲解(Qwen / DeepSeek / MiniMax / 小米 MiMo / Gemini / GPT,自带 Key);并能把任意句子拆成发音课——逐句标重音 / 升降调 / 节奏 / 连读 + 国际音标,配 0.25–4× 变速、可慢速的范读音陪你跟读、复读、导出。Rewrite your English into natural, native-sounding phrasing with Chinese explanations — now with a pronunciation studio: per-sentence stress, intonation, rhythm & linking + IPA and a slow-able model voice to shadow, loop and export. Bring your own key.",
   "version": "0.2.0",
   "keywords": [
     "english",
