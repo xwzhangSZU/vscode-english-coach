@@ -5,6 +5,16 @@ import { TTSConfig } from "../core/tts";
 import { ModelTier, PROVIDER_IDS, ProviderConfig, ProviderId } from "../core/types";
 import { getSecret } from "./secrets";
 
+export interface TtsTarget {
+  provider: "qwen" | "openai";
+  voice: string;
+  teacherInstructions: string;
+  ttsModel: string;
+  ttsInstructModel: string;
+  baseURL: string;
+  apiKey: string;
+}
+
 export const PROVIDER_TITLES: Record<ProviderId, string> = {
   qwen: "Qwen (DashScope)",
   minimax: "MiniMax",
@@ -102,4 +112,33 @@ export async function getTTSConfig(context: vscode.ExtensionContext): Promise<TT
 export function getClipboardMinLength(): number {
   const n = cfg().get<number>("clipboardWatch.minLength") ?? 12;
   return Number.isFinite(n) ? n : 12;
+}
+
+function sirCfg() {
+  return vscode.workspace.getConfiguration("sayItRight");
+}
+
+export async function getAnalysisConfig(context: vscode.ExtensionContext): Promise<ProviderConfig> {
+  const c = sirCfg();
+  const rawProvider = c.get<string>("provider") ?? "qwen";
+  const provider: ProviderId = (rawProvider === "openai" ? "openai" : "qwen") as ProviderId;
+  const base = await getProviderConfig(context, provider);
+  const overrideModel = (c.get<string>(`analysisModel.${provider}`) ?? "").trim();
+  return { ...base, model: overrideModel || base.model };
+}
+
+export async function getTtsTarget(context: vscode.ExtensionContext): Promise<TtsTarget> {
+  const c = sirCfg();
+  const rawProvider = c.get<string>("provider") ?? "qwen";
+  const provider: "qwen" | "openai" = rawProvider === "openai" ? "openai" : "qwen";
+  const base = await getProviderConfig(context, provider);
+  return {
+    provider,
+    voice: (c.get<string>(`voice.${provider}`) ?? "").trim() || (provider === "openai" ? "marin" : "Cherry"),
+    teacherInstructions: (c.get<string>("teacherInstructions") ?? "").trim(),
+    ttsModel: (c.get<string>(`ttsModel.${provider}`) ?? "").trim() || (provider === "openai" ? "gpt-4o-mini-tts" : "qwen3-tts-flash"),
+    ttsInstructModel: (c.get<string>("ttsInstructModel.qwen") ?? "").trim() || "qwen3-tts-instruct-flash",
+    baseURL: base.baseURL,
+    apiKey: base.apiKey,
+  };
 }

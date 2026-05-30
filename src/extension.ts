@@ -7,6 +7,7 @@ import { HistoryStore } from "./vscode/history";
 import { HistoryTreeProvider } from "./vscode/history-view";
 import { setApiKeyInteractive } from "./vscode/secrets";
 import { CoachViewProvider } from "./vscode/sidebar/provider";
+import { SayItRightPanel } from "./vscode/player/panel";
 
 export function activate(context: vscode.ExtensionContext): void {
   const history = new HistoryStore(context);
@@ -48,6 +49,19 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("englishCoach.history.clear", async () => {
       const ok = await vscode.window.showWarningMessage("Clear all English Coach history?", { modal: true }, "Clear");
       if (ok === "Clear") await history.clear();
+    }),
+    vscode.commands.registerCommand("sayItRight.analyzeSelection", () => {
+      const ed = vscode.window.activeTextEditor;
+      const text = ed?.document.getText(ed.selection)?.trim();
+      if (!text) {
+        void vscode.window.showWarningMessage("Select some English text first.");
+        return;
+      }
+      SayItRightPanel.show(context, text);
+    }),
+    vscode.commands.registerCommand("sayItRight.practiceSentence", async () => {
+      const text = (await vscode.window.showInputBox({ prompt: "Type or paste an English sentence" }))?.trim();
+      if (text) SayItRightPanel.show(context, text);
     }),
   );
 }
