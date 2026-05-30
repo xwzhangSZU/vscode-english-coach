@@ -12,3 +12,5 @@ tsconfig.json
 .gitignore
 .prettierrc
 package-lock.json
+.claude/**
+*.vsix
