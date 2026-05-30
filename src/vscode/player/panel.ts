@@ -6,6 +6,7 @@ import { toStave } from "../../core/stave";
 import { synthesize, synthesizeOpenAISpeech } from "../../core/tts";
 import { getAnalysisConfig, getTtsTarget, getTTSConfig } from "../config";
 import { cacheAudio, audioCacheKey } from "../audio-cache";
+import { audioExtension } from "../audio";
 
 export class SayItRightPanel {
   public static current?: SayItRightPanel;
@@ -28,7 +29,7 @@ export class SayItRightPanel {
         enableScripts: true,
         retainContextWhenHidden: true,
         localResourceRoots: [
-          vscode.Uri.joinPath(context.extensionUri, "src", "vscode", "player", "media"),
+          vscode.Uri.joinPath(context.extensionUri, "media"),
           vscode.Uri.joinPath(context.globalStorageUri, "audio-cache"),
         ],
       },
@@ -47,7 +48,8 @@ export class SayItRightPanel {
     this.panel.onDidDispose(() => {
       SayItRightPanel.current = undefined;
     });
-    this.load(text);
+    this.sentences = splitSentences(text);
+    this.index = 0;
   }
 
   private load(text: string): void {
@@ -104,15 +106,8 @@ export class SayItRightPanel {
     try {
       const target = await getTtsTarget(this.context);
       const instructions = teacher ? target.teacherInstructions : "";
-      const format = target.provider === "openai" ? "mp3" : "wav";
-      const key = audioCacheKey({
-        text: sentence,
-        provider: target.provider,
-        voice: target.voice,
-        instructions,
-        format,
-      });
       let bytes: Buffer;
+      let ext: string;
       if (target.provider === "openai") {
         bytes = await synthesizeOpenAISpeech(sentence, {
           apiKey: target.apiKey,
@@ -123,21 +118,32 @@ export class SayItRightPanel {
           speed: teacher ? 0.9 : 1.0,
           format: "mp3",
         });
+        ext = "mp3";
       } else {
         const ttsConfig = await getTTSConfig(this.context);
         const buffers = await synthesize(
           sentence,
           {
             ...ttsConfig,
+            provider: "qwen" as const,
             qwenModel: teacher ? target.ttsInstructModel : target.ttsModel,
             qwenVoice: target.voice,
             qwenInstructions: instructions,
           },
           {},
         );
+        if (!buffers[0]) throw new Error("TTS returned no audio.");
         bytes = buffers[0];
+        ext = audioExtension(bytes);
       }
-      const file = await cacheAudio(this.context, key, format, bytes);
+      const key = audioCacheKey({
+        text: sentence,
+        provider: target.provider,
+        voice: target.voice,
+        instructions,
+        format: ext,
+      });
+      const file = await cacheAudio(this.context, key, ext, bytes);
       this.lastAudioFile = file;
       this.post({ type: "audio", src: this.panel.webview.asWebviewUri(file).toString(), teacher });
     } catch (e) {
@@ -167,7 +173,7 @@ export class SayItRightPanel {
   private html(): string {
     const w = this.panel.webview;
     const nonce = randomBytes(16).toString("hex");
-    const base = vscode.Uri.joinPath(this.context.extensionUri, "src", "vscode", "player", "media");
+    const base = vscode.Uri.joinPath(this.context.extensionUri, "media", "player");
     const js = w.asWebviewUri(vscode.Uri.joinPath(base, "player.js"));
     const css = w.asWebviewUri(vscode.Uri.joinPath(base, "player.css"));
     return `<!DOCTYPE html><html><head><meta charset="UTF-8" />

@@ -62,7 +62,7 @@ async function play(context: vscode.ExtensionContext, data: Buffer, signal: Abor
 }
 
 /** Pick a file extension from the audio's magic bytes so afplay reads it correctly. */
-function audioExtension(data: Buffer): string {
+export function audioExtension(data: Buffer): string {
   if (data.length >= 4 && data.toString("ascii", 0, 4) === "RIFF") return "wav";
   if (data.length >= 3 && data.toString("ascii", 0, 3) === "ID3") return "mp3";
   if (data.length >= 2 && data[0] === 0xff && (data[1] & 0xe0) === 0xe0) return "mp3";
