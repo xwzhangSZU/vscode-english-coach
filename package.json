@@ -1,8 +1,8 @@
 {
-  "name": "vscode-english-coach",
-  "displayName": "English Coach 英语口语教练",
+  "name": "vscode-say-it-right",
+  "displayName": "Say It Right 英语口语教练",
   "description": "Qwen 通义千问 / DeepSeek / MiniMax 海螺 / 小米 MiMo / Gemini / GPT 驱动的英语口语教练:把你的英文改写成地道表达并用中文讲解,边写提示词边练口语,支持朗读(TTS)。Rewrite English into natural, native-sounding phrasing with Chinese explanations — powered by Qwen, DeepSeek, MiniMax, MiMo, Gemini, OpenAI.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "keywords": [
     "english",
     "英语",
@@ -91,7 +91,9 @@
       { "command": "englishCoach.history.delete", "title": "Delete", "icon": "$(trash)" },
       { "command": "englishCoach.history.clear", "title": "English Coach: Clear History", "icon": "$(clear-all)" },
       { "command": "englishCoach.reviewDeck", "title": "English Coach: Review Deck 复习错题本", "icon": "$(mortar-board)" },
-      { "command": "englishCoach.history.star", "title": "Star / Unstar", "icon": "$(star)" }
+      { "command": "englishCoach.history.star", "title": "Star / Unstar", "icon": "$(star)" },
+      { "command": "sayItRight.analyzeSelection", "title": "Say It Right: Analyze Selection" },
+      { "command": "sayItRight.practiceSentence", "title": "Say It Right: Practice a Sentence" }
     ],
     "menus": {
       "commandPalette": [
@@ -108,6 +110,9 @@
         { "command": "englishCoach.history.star", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" },
         { "command": "englishCoach.history.copyOutput", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" },
         { "command": "englishCoach.history.delete", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" }
+      ],
+      "editor/context": [
+        { "command": "sayItRight.analyzeSelection", "when": "editorHasSelection", "group": "navigation" }
       ]
     },
     "chatParticipants": [
@@ -174,7 +179,63 @@
         "englishCoach.tts.minimaxBaseURL": { "type": "string", "default": "https://api.minimaxi.com/v1" },
         "englishCoach.tts.minimaxModel": { "type": "string", "default": "speech-2.8-turbo" },
         "englishCoach.tts.minimaxVoiceId": { "type": "string", "default": "male-qn-qingse" },
-        "englishCoach.clipboardWatch.minLength": { "type": "number", "default": 12 }
+        "englishCoach.clipboardWatch.minLength": { "type": "number", "default": 12 },
+        "sayItRight.provider": {
+          "type": "string",
+          "enum": ["qwen", "openai"],
+          "default": "qwen",
+          "description": "Provider used by the Say It Right pronunciation player."
+        },
+        "sayItRight.analysisModel.qwen": {
+          "type": "string",
+          "default": "qwen3.5-flash",
+          "description": "Qwen model used for pronunciation analysis."
+        },
+        "sayItRight.analysisModel.openai": {
+          "type": "string",
+          "default": "gpt-5.4-nano",
+          "description": "OpenAI model used for pronunciation analysis."
+        },
+        "sayItRight.ttsModel.qwen": {
+          "type": "string",
+          "default": "qwen3-tts-flash",
+          "description": "Qwen TTS model used for read-aloud in the player."
+        },
+        "sayItRight.ttsInstructModel.qwen": {
+          "type": "string",
+          "default": "qwen3-tts-instruct-flash",
+          "description": "Qwen instructable TTS model used for teacher-mode read-aloud."
+        },
+        "sayItRight.ttsModel.openai": {
+          "type": "string",
+          "default": "gpt-4o-mini-tts",
+          "description": "OpenAI TTS model used for read-aloud in the player."
+        },
+        "sayItRight.voice.qwen": {
+          "type": "string",
+          "default": "Cherry",
+          "description": "Voice name used with the Qwen TTS provider."
+        },
+        "sayItRight.voice.openai": {
+          "type": "string",
+          "default": "marin",
+          "description": "Voice name used with the OpenAI TTS provider."
+        },
+        "sayItRight.teacherInstructions": {
+          "type": "string",
+          "default": "Read slowly and clearly like a patient English teacher. Articulate each word, slightly exaggerate stressed syllables, neutral General American accent.",
+          "description": "System instructions passed to the instructable TTS model for teacher-mode playback."
+        },
+        "sayItRight.loopCount": {
+          "type": "number",
+          "default": 3,
+          "description": "Number of times each sentence is played in loop mode."
+        },
+        "sayItRight.loopGapSeconds": {
+          "type": "number",
+          "default": 1.0,
+          "description": "Pause in seconds between loop repetitions."
+        }
       }
     }
   },
