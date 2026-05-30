@@ -35,7 +35,6 @@ const MODEL_CATALOG: Record<ProviderId, ProviderModels> = {
     all: [
       { id: "mimo-v2.5-pro", title: "V2.5 Pro" },
       { id: "mimo-v2.5", title: "V2.5" },
-      { id: "mimo-v2-flash", title: "V2 Flash" },
     ],
   },
   gemini: {
@@ -124,7 +123,6 @@ export const SAY_IT_RIGHT_ANALYSIS_MODELS: Record<SayItRightProviderId, ModelEnt
   mimo: [
     { id: "mimo-v2.5-pro", title: "V2.5 Pro" },
     { id: "mimo-v2.5", title: "V2.5" },
-    { id: "mimo-v2-flash", title: "V2 Flash" },
   ],
   gemini: [
     { id: "gemini-3.5-flash", title: "3.5 Flash" },

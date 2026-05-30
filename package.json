@@ -2,7 +2,7 @@
   "name": "vscode-say-it-right",
   "displayName": "Say It Right",
   "description": "Practice English pronunciation in VS Code with stress, intonation, rhythm, linking, IPA, shadowing loops, and model speech.",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "keywords": [
     "english",
     "pronunciation",
@@ -248,8 +248,7 @@
           "type": "string",
           "enum": [
             "mimo-v2.5-pro",
-            "mimo-v2.5",
-            "mimo-v2-flash"
+            "mimo-v2.5"
           ],
           "default": "mimo-v2.5-pro"
         },
@@ -418,11 +417,10 @@
           "type": "string",
           "enum": [
             "mimo-v2.5-pro",
-            "mimo-v2.5",
-            "mimo-v2-flash"
+            "mimo-v2.5"
           ],
           "default": "mimo-v2.5",
-          "description": "MiMo model used for pronunciation analysis (flash-tier default for speed)."
+          "description": "MiMo model used for pronunciation analysis (V2.5 by default; V2.5 Pro adds reasoning but is slower)."
         },
         "sayItRight.analysisModel.gemini": {
           "type": "string",
