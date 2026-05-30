@@ -2,15 +2,12 @@ import * as vscode from "vscode";
 import { ProviderId, RewriteTone } from "../core/types";
 
 export type CoachMode = "coach" | "translate";
-export type WatchMode = "stage" | "auto";
 
 export interface UiState {
   mode: CoachMode;
   tone: RewriteTone;
   providerId: ProviderId | "";
   targetLanguage: string;
-  watchEnabled: boolean;
-  watchMode: WatchMode;
 }
 
 const KEY = "englishCoach.uiState";
@@ -20,8 +17,6 @@ const DEFAULT_STATE: UiState = {
   tone: "natural",
   providerId: "",
   targetLanguage: "auto",
-  watchEnabled: false,
-  watchMode: "stage",
 };
 
 export function loadUiState(context: vscode.ExtensionContext): UiState {

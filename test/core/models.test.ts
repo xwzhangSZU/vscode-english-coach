@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { resolveModel, getTierLabel } from "../../src/core/models";
+import {
+  DEFAULT_SAY_IT_RIGHT_ANALYSIS_MODELS,
+  DEFAULT_TTS_VOICES,
+  SAY_IT_RIGHT_ANALYSIS_MODELS,
+  TTS_VOICES,
+  resolveModel,
+  getTierLabel,
+} from "../../src/core/models";
 
 describe("resolveModel", () => {
   it("returns the catalog id for fast/pro", () => {
@@ -16,6 +23,15 @@ describe("resolveModel", () => {
   it("resolves the MiniMax high-speed model", () => {
     expect(resolveModel("minimax", "fast", "")).toBe("MiniMax-M2.7-highspeed");
     expect(resolveModel("minimax", "pro", "")).toBe("MiniMax-M2.7-highspeed");
+  });
+  it("keeps expired MiMo routing ids out of the active catalogs", () => {
+    expect(SAY_IT_RIGHT_ANALYSIS_MODELS.mimo.map((m) => m.id)).not.toContain("mimo-v2-pro");
+    expect(SAY_IT_RIGHT_ANALYSIS_MODELS.mimo.map((m) => m.id)).not.toContain("mimo-v2-omni");
+  });
+  it("uses current pronunciation defaults", () => {
+    expect(DEFAULT_SAY_IT_RIGHT_ANALYSIS_MODELS.qwen).toBe("qwen3.6-flash");
+    expect(DEFAULT_TTS_VOICES.minimax).toBe("English_expressive_narrator");
+    expect(TTS_VOICES.minimax).not.toContain("male-qn-qingse");
   });
 });
 

@@ -44,4 +44,56 @@ describe("generateWithProvider (OpenAI protocol)", () => {
       expect.objectContaining({ method: "POST" }),
     );
   });
+
+  it("uses MiMo Token Plan headers, disables thinking, and falls back to JSON object mode", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: "{}" } }] }), { status: 200 }),
+    );
+    const config: ProviderConfig = {
+      id: "mimo",
+      title: "Xiaomi MiMo",
+      apiKey: "tp-test",
+      baseURL: "https://token-plan-cn.xiaomimimo.com/v1",
+      model: "mimo-v2.5-pro",
+      apiProtocol: "openai",
+    };
+    await generateWithProvider(config, { system: "s", user: "u" }, 5000, 256, {
+      responseMimeType: "application/json",
+      responseJsonSchema: { type: "object", properties: { ok: { type: "boolean" } } },
+    });
+    const [, init] = fetchMock.mock.calls[0];
+    const headers = init?.headers as Record<string, string>;
+    const body = JSON.parse(String(init?.body));
+    expect(headers.Authorization).toBe("Bearer tp-test");
+    expect(headers["api-key"]).toBe("tp-test");
+    expect(body.thinking).toEqual({ type: "disabled" });
+    expect(body.response_format).toEqual({ type: "json_object" });
+    expect(body.messages[0].content).toContain("JSON schema");
+  });
+});
+
+describe("generateWithProvider (Gemini protocol)", () => {
+  it("uses Gemini JSON mime mode and embeds schema constraints in the prompt", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "{}" }] } }] }), { status: 200 }),
+    );
+    const config: ProviderConfig = {
+      id: "gemini",
+      title: "Gemini",
+      apiKey: "gem-test",
+      baseURL: "https://generativelanguage.googleapis.com/v1beta",
+      model: "gemini-3.5-flash",
+      apiProtocol: "openai",
+    };
+    await generateWithProvider(config, { system: "s", user: "u" }, 5000, 256, {
+      responseMimeType: "application/json",
+      responseJsonSchema: { type: "object", properties: { ok: { type: "boolean" } } },
+    });
+    const [, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(String(init?.body));
+    expect(body.generationConfig.responseMimeType).toBe("application/json");
+    expect(body.generationConfig.responseFormat).toBeUndefined();
+    expect(body.system_instruction.parts[0].text).toContain("Structured output requirements");
+    expect(body.system_instruction.parts[0].text).toContain("JSON schema");
+  });
 });

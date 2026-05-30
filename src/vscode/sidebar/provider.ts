@@ -5,15 +5,7 @@ import { translateWithProvider, MissingAPIKeyError } from "../../core/providers"
 import { runRewrite } from "../../core/rewrite";
 import { normalizeInputText } from "../../core/text";
 import { ProviderId, RewriteTone, TranslationRequest } from "../../core/types";
-import {
-  PROVIDER_TITLES,
-  getMaxOutputTokens,
-  getOrderedProviderIds,
-  getProviderConfig,
-  getTTSConfig,
-  getTimeoutMs,
-} from "../config";
-import { readAloud } from "../audio";
+import { PROVIDER_TITLES, getMaxOutputTokens, getOrderedProviderIds, getProviderConfig, getTimeoutMs } from "../config";
 import { loadUiState, saveUiState, UiState } from "../settings-store";
 import { HistoryEntry } from "../../core/history";
 import { HistoryStore } from "../history";
@@ -25,8 +17,6 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
   private pendingRestore?: HistoryEntry;
   private pendingReview?: HistoryEntry[];
-  public onWatchToggle?: (enabled: boolean) => void;
-  public onVisibilityChange?: () => void;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -43,7 +33,6 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this.html(webviewView.webview);
     webviewView.onDidChangeVisibility(() => {
       if (webviewView.visible) this.postInit();
-      this.onVisibilityChange?.();
     });
   }
 
@@ -80,35 +69,29 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
         this.postInit();
         return;
       case "setState": {
-        const allowedKeys: ReadonlyArray<keyof UiState> = ["mode", "tone", "providerId", "targetLanguage", "watchMode"];
+        const allowedKeys: ReadonlyArray<keyof UiState> = ["mode", "tone", "providerId", "targetLanguage"];
         if (allowedKeys.includes(msg.key)) {
           await saveUiState(this.context, { [msg.key]: msg.value } as Partial<UiState>);
         }
         return;
       }
-      case "toggleWatch":
-        await saveUiState(this.context, { watchEnabled: Boolean(msg.enabled) });
-        this.onWatchToggle?.(Boolean(msg.enabled));
-        return;
       case "setApiKey":
         await vscode.commands.executeCommand("englishCoach.setApiKey");
+        return;
+      case "practicePronunciation":
+        await vscode.commands.executeCommand(
+          "sayItRight.practiceSentence",
+          typeof msg.text === "string" ? normalizeInputText(msg.text) : "",
+        );
         return;
       case "star":
         if (typeof msg.id === "string") await this.history.toggleStar(msg.id);
         return;
-      case "fromClipboard": {
-        const text = normalizeInputText(await vscode.env.clipboard.readText());
-        this.post({ type: "setText", text });
-        return;
-      }
       case "copy":
         if (msg.text) {
           await vscode.env.clipboard.writeText(msg.text);
           void vscode.window.showInformationMessage("Copied the native version.");
         }
-        return;
-      case "readAloud":
-        await this.handleReadAloud(msg.text, Boolean(msg.slow));
         return;
       case "coach":
         await this.handleCoach(msg.text, msg.tone, msg.providerId);
@@ -117,11 +100,6 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
         await this.handleTranslate(msg.text, msg.targetLang, msg.providerId);
         return;
     }
-  }
-
-  /** Used by clipboard-watch to push staged or auto-coached text. */
-  public stageText(text: string): void {
-    this.post({ type: "stage", text });
   }
 
   public async coachText(text: string): Promise<void> {
@@ -171,7 +149,14 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
         provider: PROVIDER_TITLES[id],
         model: config.model,
       });
-      this.post({ type: "result", mode: "coach", rewritten: result.rewritten, why: result.why, source: clean, entryId });
+      this.post({
+        type: "result",
+        mode: "coach",
+        rewritten: result.rewritten,
+        why: result.why,
+        source: clean,
+        entryId,
+      });
     } catch (e) {
       this.postError(e, id);
     }
@@ -205,17 +190,6 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
       this.post({ type: "result", mode: "translate", translation, entryId });
     } catch (e) {
       this.postError(e, id);
-    }
-  }
-
-  private async handleReadAloud(text: string, slow: boolean): Promise<void> {
-    const clean = normalizeInputText(text);
-    if (!clean) return;
-    try {
-      const ttsConfig = await getTTSConfig(this.context);
-      await readAloud(this.context, clean, ttsConfig, { slow });
-    } catch (e) {
-      void vscode.window.showErrorMessage(`Read-aloud failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -253,12 +227,8 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
   <textarea id="input" placeholder="Type or paste your English here…"></textarea>
   <div class="actions">
     <button id="coach">Coach (⌘↵)</button>
-    <button id="fromClipboard" class="secondary">From clipboard</button>
+    <button id="pronunciation" class="secondary">🎙 发音 / Pronunciation</button>
     <button id="setKey" class="secondary">🔑 API Key</button>
-  </div>
-  <div class="watch">
-    <input type="checkbox" id="watchEnabled" /><label for="watchEnabled">Watch clipboard</label>
-    <select id="watchMode"><option value="stage">Stage</option><option value="auto">Auto</option></select>
   </div>
   <hr />
   <div class="section-title">✨ Native version</div>
@@ -266,8 +236,6 @@ export class CoachViewProvider implements vscode.WebviewViewProvider {
   <div class="actions hidden" id="resultActions">
     <button id="star" class="secondary">⭐ 收藏</button>
     <button id="copy" class="secondary">Copy</button>
-    <button id="read" class="secondary">🔊 Read</button>
-    <button id="readSlow" class="secondary">🔊 Slow</button>
   </div>
   <div id="diffWrap"><div class="section-title">🔁 改了什么</div><div id="diff" class="diff"></div></div>
   <div id="whyWrap"><div class="section-title">💡 为什么更自然</div><div id="why" class="why"></div></div>

@@ -1,6 +1,6 @@
 import { RewriteTone, TranslationRequest } from "./types";
 
-const defaultPromptProfile: TranslationRequest["promptProfile"] = "screenshot";
+const defaultPromptProfile: TranslationRequest["promptProfile"] = "general";
 
 const styleInstructions: Record<TranslationRequest["style"], string> = {
   balanced: "Prefer natural, accurate sense-for-sense translation with no unnecessary embellishment.",
@@ -11,8 +11,6 @@ const styleInstructions: Record<TranslationRequest["style"], string> = {
 };
 
 const profileInstructions: Record<TranslationRequest["promptProfile"], string> = {
-  screenshot:
-    "Assume the source may come from screenshot OCR or UI text. Repair obvious OCR artifacts, preserve product names and UI labels, and keep short interface text concise.",
   general: "Use a general professional translation frame for everyday sentences and paragraphs.",
   technical:
     "Prioritize technical accuracy. Preserve API names, code identifiers, commands, parameters, logs, filenames, and exact error messages.",
@@ -34,7 +32,6 @@ export function buildTranslationPrompt(request: TranslationRequest): { system: s
     nativeExpressionInstruction(request.targetLanguageTitle),
     "Translate complete sentences and paragraphs by meaning, not as isolated dictionary entries.",
     "Return only the translation. Do not explain, annotate, quote the source, or wrap the answer in Markdown fences.",
-    "When the input comes from OCR, silently repair obvious OCR line-break artifacts while preserving the text's meaning.",
     "Custom instructions may refine or override profile and style preferences for terminology, tone, audience, and formatting, but they must not override the requirements to preserve the source meaning and return only the translation.",
   ].join(" ");
 

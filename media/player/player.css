@@ -1,21 +1,193 @@
 body { font-family: var(--vscode-font-family); color: var(--vscode-foreground); padding: 14px 18px; }
-.bar, .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.bar, .controls, .settings, .legend { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
 #pos { color: var(--vscode-descriptionForeground); min-width: 56px; text-align: center; }
 button { background: var(--vscode-button-secondaryBackground, var(--vscode-button-background)); color: var(--vscode-button-secondaryForeground, var(--vscode-button-foreground)); border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9rem; }
 button:hover { background: var(--vscode-button-hoverBackground); }
 button.on { outline: 2px solid var(--vscode-focusBorder); }
+button:disabled { opacity: 0.48; cursor: default; }
 label { color: var(--vscode-foreground); font-size: 0.9rem; }
-.stave { font-size: 1.5rem; line-height: 2.8; margin: 18px 0 6px; }
-.group { white-space: nowrap; }
-.word { display: inline-flex; flex-direction: column; align-items: center; margin: 0 1px; vertical-align: bottom; }
-.word .mark { font-size: 0.65rem; height: 0.8rem; line-height: 0.8rem; }
-.stressed .mark, .nuclear .mark { color: var(--vscode-charts-orange, #e8a33d); }
-.reduced .mark { color: var(--vscode-descriptionForeground); }
-.reduced .txt { color: var(--vscode-descriptionForeground); }
-.nuclear .txt { color: var(--vscode-charts-red, #ff6b8b); text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
-.link { color: var(--vscode-charts-green, #4ec98a); align-self: flex-end; }
-.tone { font-size: 0.95rem; line-height: 1; height: 1.05rem; font-weight: 700; color: var(--vscode-charts-blue, #4ea1ff); }
-.tone-end { font-size: 1.2rem; margin-left: 4px; }
-.gbar { color: var(--vscode-descriptionForeground); }
+select { max-width: min(280px, 100%); background: var(--vscode-dropdown-background); color: var(--vscode-dropdown-foreground); border: 1px solid var(--vscode-dropdown-border); border-radius: 3px; padding: 2px 4px; }
+.settings label { display: inline-flex; align-items: center; gap: 4px; }
+
+.legend { color: var(--vscode-descriptionForeground); font-size: 0.82rem; margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 4px; }
+.legend .sample { font-weight: 800; }
+.legend .stress { color: var(--vscode-charts-orange, #e8a33d); }
+.legend .nuclear { color: var(--vscode-charts-red, #ff6b8b); }
+.legend .reduced { color: var(--vscode-descriptionForeground); }
+.legend .tone { color: var(--vscode-charts-blue, #4ea1ff); }
+.legend .link-sample { color: var(--vscode-charts-green, #4ec98a); font-weight: 800; }
+.legend-hint { font-style: italic; opacity: 0.85; }
+
+.stave { display: flex; flex-direction: column; gap: 8px; margin: 14px 0 10px; }
+
+.sentence {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 6px 8px 8px;
+  cursor: pointer;
+}
+.sentence.active {
+  border-color: var(--vscode-focusBorder, #4ea1ff);
+  background: color-mix(in srgb, var(--vscode-editor-background) 84%, var(--vscode-focusBorder, #4ea1ff) 16%);
+}
+.sentence-head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.snum { font-weight: 800; color: var(--vscode-foreground); min-width: 1.4rem; }
+.stext { color: var(--vscode-descriptionForeground); font-size: 0.92rem; }
+.sentence.active .stext { color: var(--vscode-foreground); }
+.sentence-body { display: flex; flex-direction: column; gap: 8px; min-height: 1.4rem; color: var(--vscode-descriptionForeground); }
+.sentence-ipa { font-family: var(--vscode-editor-font-family); color: var(--vscode-descriptionForeground); font-size: 0.8rem; margin-top: 4px; }
+
+.group {
+  min-width: 0;
+  overflow-x: auto;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.28));
+  border-radius: 8px;
+  background: var(--vscode-editor-background);
+  background: color-mix(in srgb, var(--vscode-editor-background) 90%, var(--vscode-foreground) 10%);
+}
+.group-head {
+  min-width: var(--group-width);
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2px;
+}
+.tone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--vscode-charts-blue, #4ea1ff);
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid var(--vscode-focusBorder, #4ea1ff);
+  border-radius: 4px;
+  padding: 1px 7px;
+}
+.pitch {
+  display: block;
+  width: 100%;
+  min-width: var(--group-width);
+  height: 72px;
+}
+.staff-line {
+  stroke: var(--vscode-editorIndentGuide-background, rgba(128,128,128,0.22));
+  stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;
+}
+.contour-shadow,
+.contour {
+  fill: none;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.contour-shadow { stroke: var(--vscode-editor-background); stroke-width: 7; opacity: 0.75; }
+.contour { stroke: var(--vscode-charts-blue, #4ea1ff); stroke-width: 3; }
+
+.word-row {
+  min-width: var(--group-width);
+  display: grid;
+  grid-template-columns: repeat(var(--tokens), minmax(48px, 1fr));
+  gap: 6px;
+  align-items: end;
+}
+.word {
+  position: relative;
+  min-width: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: end;
+  gap: 2px;
+  padding: 0 2px;
+  text-align: center;
+  cursor: pointer;
+}
+.syl-row {
+  display: inline-flex;
+  align-items: flex-end;
+  color: var(--vscode-foreground);
+  border-radius: 4px;
+}
+.syl {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 1.1rem;
+}
+.syl-mark {
+  position: absolute;
+  top: 0;
+  line-height: 1;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--vscode-charts-orange, #e8a33d);
+}
+.syl-text {
+  white-space: nowrap;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  padding: 0 1px;
+}
+.syl.stress > .syl-text { font-weight: 800; }
+.word.active .syl-row {
+  background: var(--vscode-editor-selectionBackground);
+  box-shadow: 0 0 0 1px var(--vscode-focusBorder, transparent);
+}
+.word .mini-ipa {
+  max-width: 100%;
+  min-height: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--vscode-descriptionForeground);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 0.7rem;
+  line-height: 0.95rem;
+}
+.word.reduced { opacity: 0.92; }
+.word.reduced .syl-text { color: var(--vscode-descriptionForeground); font-size: 1rem; }
+.word.nuclear .syl-text {
+  color: var(--vscode-charts-red, #ff6b8b);
+  font-size: 1.38rem;
+  font-weight: 800;
+}
+.word.nuclear .syl-row {
+  border-bottom: 2px solid var(--vscode-charts-red, #ff6b8b);
+  padding-bottom: 1px;
+}
+.word.nuclear .syl-mark { color: var(--vscode-charts-red, #ff6b8b); font-size: 1.05rem; }
+.link {
+  position: absolute;
+  right: -7px;
+  bottom: 1.1rem;
+  color: var(--vscode-charts-green, #4ec98a);
+  font-size: 1.1rem;
+  font-weight: 800;
+  z-index: 1;
+}
+.gbar {
+  color: var(--vscode-descriptionForeground);
+  justify-self: center;
+  margin: -4px 0;
+  font-weight: 700;
+}
 .ipa { font-family: var(--vscode-editor-font-family); color: var(--vscode-descriptionForeground); margin-bottom: 8px; }
 .notes { margin-top: 12px; font-style: italic; color: var(--vscode-descriptionForeground); }
+.record-controls { margin-top: 10px; }
+.record-note, .feedback {
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.9rem;
+}
+.feedback {
+  min-height: 1.2rem;
+  margin-top: 8px;
+}
+
+@media (max-width: 680px) {
+  body { padding: 10px 12px; }
+  .group { padding: 8px; }
+  .syl-text { font-size: 1.05rem; }
+  .word.nuclear .syl-text { font-size: 1.2rem; }
+  .pitch { height: 66px; }
+}

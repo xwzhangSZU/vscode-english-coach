@@ -7,6 +7,7 @@ function ttsConfig(overrides: Partial<TTSConfig>): TTSConfig {
   return {
     provider: "qwen",
     geminiApiKey: "",
+    geminiModel: "gemini-3.1-flash-tts-preview",
     geminiVoice: "Kore",
     dashscopeApiKey: "",
     qwenModel: "qwen3-tts-flash",
@@ -31,7 +32,7 @@ describe("splitTextForQwen", () => {
     expect(splitTextForQwen("Hello there.")).toEqual(["Hello there."]);
   });
   it("splits long text on sentence boundaries", () => {
-    const long = ("This is a sentence. ".repeat(40)).trim();
+    const long = "This is a sentence. ".repeat(40).trim();
     const chunks = splitTextForQwen(long);
     expect(chunks.length).toBeGreaterThan(1);
     expect(chunks.join(" ").replace(/\s+/g, " ")).toContain("This is a sentence.");
@@ -72,20 +73,47 @@ describe("synthesize", () => {
   });
 
   it("MiMo decodes base64 audio from the chat-completions response", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ choices: [{ message: { audio: { data: "AQIDBA==" } } }] }), { status: 200 }),
     );
-    const buffers = await synthesize("hi", ttsConfig({ provider: "mimo", mimoApiKey: "k" }));
+    const buffers = await synthesize(
+      "hi",
+      ttsConfig({ provider: "mimo", mimoApiKey: "k", mimoVoice: "Dean", mimoModel: "mimo-v2.5-tts" }),
+    );
     expect(buffers).toHaveLength(1);
     expect(buffers[0].length).toBe(4);
+    const [url, init] = fetchMock.mock.calls[0];
+    const headers = init?.headers as Record<string, string>;
+    const body = JSON.parse(String(init?.body));
+    expect(url).toBe("https://token-plan-cn.xiaomimimo.com/v1/chat/completions");
+    expect(headers.Authorization).toBe("Bearer k");
+    expect(headers["api-key"]).toBe("k");
+    expect(body.model).toBe("mimo-v2.5-tts");
+    expect(body.messages).toEqual([{ role: "assistant", content: "hi" }]);
+    expect(body.audio).toEqual({ format: "wav", voice: "Dean" });
   });
 
   it("MiniMax decodes hex audio from t2a_v2", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ base_resp: { status_code: 0 }, data: { audio: "01020304" } }), { status: 200 }),
     );
-    const buffers = await synthesize("hi", ttsConfig({ provider: "minimax", minimaxApiKey: "k" }));
+    const buffers = await synthesize(
+      "hi",
+      ttsConfig({
+        provider: "minimax",
+        minimaxApiKey: "k",
+        minimaxModel: "speech-2.8-hd",
+        minimaxVoiceId: "English_WiseScholar",
+      }),
+    );
     expect(buffers).toHaveLength(1);
     expect(buffers[0].length).toBe(4);
+    const [url, init] = fetchMock.mock.calls[0];
+    const body = JSON.parse(String(init?.body));
+    expect(url).toBe("https://api.minimaxi.com/v1/t2a_v2");
+    expect(body.model).toBe("speech-2.8-hd");
+    expect(body.voice_setting.voice_id).toBe("English_WiseScholar");
+    expect(body.audio_setting).toMatchObject({ sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 });
+    expect(body.output_format).toBe("hex");
   });
 });

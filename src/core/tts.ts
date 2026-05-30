@@ -3,6 +3,7 @@ import { TTSProvider } from "./types";
 export interface TTSConfig {
   provider: TTSProvider;
   geminiApiKey: string;
+  geminiModel: string;
   geminiVoice: string;
   dashscopeApiKey: string;
   qwenModel: string;
@@ -25,9 +26,9 @@ export interface SynthesizeOptions {
   signal?: AbortSignal;
 }
 
-const GEMINI_TTS_MODEL = "gemini-3.1-flash-tts-preview";
+const GEMINI_TTS_DEFAULT_MODEL = "gemini-3.1-flash-tts-preview";
 const GEMINI_TTS_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
-const GEMINI_DEFAULT_VOICE = "Kore";
+const GEMINI_DEFAULT_VOICE = "Charon";
 const GEMINI_SAMPLE_RATE = 24000;
 
 const QWEN_TTS_INSTRUCT_MODEL = "qwen3-tts-instruct-flash";
@@ -43,7 +44,7 @@ const MIMO_TTS_DEFAULT_VOICE = "Chloe";
 
 const MINIMAX_TTS_DEFAULT_BASE_URL = "https://api.minimaxi.com/v1";
 const MINIMAX_TTS_DEFAULT_MODEL = "speech-2.8-turbo";
-const MINIMAX_TTS_DEFAULT_VOICE = "male-qn-qingse";
+const MINIMAX_TTS_DEFAULT_VOICE = "English_expressive_narrator";
 
 const PCM_CHANNELS = 1;
 const PCM_BITS_PER_SAMPLE = 16;
@@ -70,11 +71,7 @@ interface MinimaxTTSResponse {
 }
 
 /** Synthesize speech and return one playable audio buffer per chunk. Throws on failure. */
-export async function synthesize(
-  text: string,
-  config: TTSConfig,
-  options: SynthesizeOptions = {},
-): Promise<Buffer[]> {
+export async function synthesize(text: string, config: TTSConfig, options: SynthesizeOptions = {}): Promise<Buffer[]> {
   const trimmed = text.trim().slice(0, 5000);
   if (!trimmed) return [];
 
@@ -96,12 +93,13 @@ async function synthesizeWithGemini(
 ): Promise<Buffer> {
   const apiKey = config.geminiApiKey.trim();
   if (!apiKey) throw new Error("Add a Gemini API key to use Gemini read-aloud.");
+  const model = config.geminiModel.trim() || GEMINI_TTS_DEFAULT_MODEL;
   const voiceName = config.geminiVoice.trim() || GEMINI_DEFAULT_VOICE;
   const spokenText = slow
     ? `Read the following slowly and clearly, enunciating each word like a language teacher helping a learner: ${text}`
     : text;
 
-  const response = await fetch(`${GEMINI_TTS_BASE_URL}/models/${GEMINI_TTS_MODEL}:generateContent`, {
+  const response = await fetch(`${GEMINI_TTS_BASE_URL}/models/${model}:generateContent`, {
     method: "POST",
     headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -182,7 +180,7 @@ async function synthesizeWithMimo(text: string, config: TTSConfig, signal?: Abor
   const url = base.endsWith("/chat/completions") ? base : `${base}/chat/completions`;
   const response = await fetch(url, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: { Authorization: `Bearer ${apiKey}`, "api-key": apiKey, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: config.mimoModel.trim() || MIMO_TTS_DEFAULT_MODEL,
       messages: [{ role: "assistant", content: text }],
@@ -212,8 +210,14 @@ async function synthesizeWithMinimax(text: string, config: TTSConfig, signal?: A
       model: config.minimaxModel.trim() || MINIMAX_TTS_DEFAULT_MODEL,
       text,
       stream: false,
-      voice_setting: { voice_id: config.minimaxVoiceId.trim() || MINIMAX_TTS_DEFAULT_VOICE, speed: 1, vol: 1, pitch: 0 },
-      audio_setting: { sample_rate: 32000, format: "mp3", channel: 1 },
+      voice_setting: {
+        voice_id: config.minimaxVoiceId.trim() || MINIMAX_TTS_DEFAULT_VOICE,
+        speed: 1,
+        vol: 1,
+        pitch: 0,
+      },
+      audio_setting: { sample_rate: 32000, bitrate: 128000, format: "mp3", channel: 1 },
+      output_format: "hex",
     }),
     signal,
   });
@@ -293,11 +297,11 @@ function parseJson<T>(text: string): T & { error?: { message?: string } } {
 
 export interface OpenAISpeechConfig {
   apiKey: string;
-  baseURL: string;       // e.g. https://api.openai.com/v1
-  model: string;         // gpt-4o-mini-tts
-  voice: string;         // marin | cedar | alloy | ...
+  baseURL: string; // e.g. https://api.openai.com/v1
+  model: string; // gpt-4o-mini-tts
+  voice: string; // marin | cedar | alloy | ...
   instructions?: string; // steer pace/clarity/accent (ignored by tts-1/-hd)
-  speed?: number;        // 0.25–4.0
+  speed?: number; // 0.25–4.0
   format?: "mp3" | "wav" | "opus" | "flac" | "pcm";
   signal?: AbortSignal;
 }

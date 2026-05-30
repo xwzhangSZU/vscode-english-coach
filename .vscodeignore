@@ -3,6 +3,7 @@
 src/**
 test/**
 docs/**
+handoff-*.md
 node_modules/**
 esbuild.js
 vitest.config.ts
@@ -15,3 +16,4 @@ package-lock.json
 .claude/**
 .firecrawl/**
 *.vsix
+media/*.svg

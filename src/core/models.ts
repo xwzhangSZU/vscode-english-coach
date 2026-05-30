@@ -35,9 +35,7 @@ const MODEL_CATALOG: Record<ProviderId, ProviderModels> = {
     all: [
       { id: "mimo-v2.5-pro", title: "V2.5 Pro" },
       { id: "mimo-v2.5", title: "V2.5" },
-      { id: "mimo-v2-pro", title: "V2 Pro" },
       { id: "mimo-v2-flash", title: "V2 Flash" },
-      { id: "mimo-v2-omni", title: "V2 Omni" },
     ],
   },
   gemini: {
@@ -100,7 +98,102 @@ export function resolveModel(providerId: ProviderId, tier: string, customModel: 
   return customModel;
 }
 
-export const TTS_VOICES: Record<"qwen" | "openai", string[]> = {
-  qwen: ["Cherry", "Jennifer", "Aiden", "Ryan", "Katerina", "Ethan", "Elias", "Neil"],
-  openai: ["marin", "cedar", "alloy", "ash", "ballad", "coral", "echo", "sage", "shimmer", "verse"],
+export const SAY_IT_RIGHT_PROVIDER_IDS = ["qwen", "minimax", "mimo", "gemini", "openai"] as const;
+
+export type SayItRightProviderId = (typeof SAY_IT_RIGHT_PROVIDER_IDS)[number];
+
+export const DEFAULT_SAY_IT_RIGHT_ANALYSIS_MODELS: Record<SayItRightProviderId, string> = {
+  qwen: "qwen3.6-flash",
+  minimax: "MiniMax-M2.7-highspeed",
+  mimo: "mimo-v2.5",
+  gemini: "gemini-3.5-flash",
+  openai: "gpt-5.4-nano",
+};
+
+export const SAY_IT_RIGHT_ANALYSIS_MODELS: Record<SayItRightProviderId, ModelEntry[]> = {
+  qwen: [
+    { id: "qwen3.6-flash", title: "Qwen 3.6 Flash" },
+    { id: "qwen3.7-max", title: "Qwen 3.7 Max" },
+    { id: "qwen3.5-flash", title: "Qwen 3.5 Flash" },
+    { id: "qwen-plus", title: "Qwen Plus" },
+  ],
+  minimax: [
+    { id: "MiniMax-M2.7-highspeed", title: "M2.7 High-Speed" },
+    { id: "MiniMax-M2.7", title: "M2.7" },
+  ],
+  mimo: [
+    { id: "mimo-v2.5-pro", title: "V2.5 Pro" },
+    { id: "mimo-v2.5", title: "V2.5" },
+    { id: "mimo-v2-flash", title: "V2 Flash" },
+  ],
+  gemini: [
+    { id: "gemini-3.5-flash", title: "3.5 Flash" },
+    { id: "gemini-2.5-flash", title: "2.5 Flash" },
+  ],
+  openai: [
+    { id: "gpt-5.4-nano", title: "GPT-5.4 Nano" },
+    { id: "gpt-5.4-mini", title: "GPT-5.4 Mini" },
+    { id: "gpt-5.5", title: "GPT-5.5" },
+  ],
+};
+
+export const DEFAULT_SAY_IT_RIGHT_TTS_MODELS: Record<SayItRightProviderId, string> = {
+  qwen: "qwen3-tts-flash",
+  minimax: "speech-2.8-turbo",
+  mimo: "mimo-v2.5-tts",
+  gemini: "gemini-3.1-flash-tts-preview",
+  openai: "gpt-4o-mini-tts",
+};
+
+export const SAY_IT_RIGHT_TTS_MODELS: Record<SayItRightProviderId, ModelEntry[]> = {
+  qwen: [
+    { id: "qwen3-tts-flash", title: "Qwen3 TTS Flash" },
+    { id: "qwen3-tts-instruct-flash", title: "Qwen3 TTS Instruct Flash" },
+  ],
+  minimax: [
+    { id: "speech-2.8-turbo", title: "Speech 2.8 Turbo" },
+    { id: "speech-2.8-hd", title: "Speech 2.8 HD" },
+  ],
+  mimo: [{ id: "mimo-v2.5-tts", title: "MiMo V2.5 TTS" }],
+  gemini: [
+    { id: "gemini-3.1-flash-tts-preview", title: "Gemini 3.1 Flash TTS Preview" },
+    { id: "gemini-2.5-flash-preview-tts", title: "Gemini 2.5 Flash Preview TTS" },
+  ],
+  openai: [{ id: "gpt-4o-mini-tts", title: "GPT-4o Mini TTS" }],
+};
+
+export const DEFAULT_TTS_VOICES: Record<SayItRightProviderId, string> = {
+  qwen: "Jennifer",
+  minimax: "English_expressive_narrator",
+  mimo: "Chloe",
+  gemini: "Charon",
+  openai: "marin",
+};
+
+export const TTS_VOICES: Record<SayItRightProviderId, string[]> = {
+  qwen: ["Jennifer", "Aiden", "Neil", "Elias", "Cherry", "Katerina"],
+  minimax: [
+    "English_expressive_narrator",
+    "English_CaptivatingStoryteller",
+    "English_Trustworth_Man",
+    "English_SereneWoman",
+    "English_WiseScholar",
+  ],
+  mimo: ["Chloe", "Mia", "Milo", "Dean"],
+  gemini: ["Charon", "Iapetus", "Sulafat", "Puck"],
+  openai: [
+    "marin",
+    "cedar",
+    "coral",
+    "alloy",
+    "ash",
+    "ballad",
+    "echo",
+    "fable",
+    "nova",
+    "onyx",
+    "sage",
+    "shimmer",
+    "verse",
+  ],
 };

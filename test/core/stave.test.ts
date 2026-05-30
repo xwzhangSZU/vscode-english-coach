@@ -15,7 +15,19 @@ describe("toStave", () => {
     const rows = toStave(a);
     expect(rows).toHaveLength(1);
     expect(rows[0].tone).toBe("fall");
-    expect(rows[0].tokens[0]).toMatchObject({ text: "Finish", stressed: true, nuclear: true, link: "liaison" });
-    expect(rows[0].tokens[1]).toMatchObject({ text: "it", stressed: false });
+    expect(rows[0].toneMark).toBe("↘");
+    expect(rows[0].toneLabel).toBe("fall");
+    expect(rows[0].tokens[0]).toMatchObject({
+      text: "Finish",
+      syllables: ["Fin", "ish"],
+      stressIndex: 0,
+      stressed: true,
+      nuclear: true,
+      link: "liaison",
+    });
+    expect(rows[0].tokens[1]).toMatchObject({ text: "it", syllables: ["it"], stressIndex: null, stressed: false });
+    expect(rows[0].points).toHaveLength(2);
+    expect(rows[0].points[0]).toMatchObject({ kind: "nuclear" });
+    expect(rows[0].points[0].y).toBeLessThan(rows[0].points[1].y);
   });
 });

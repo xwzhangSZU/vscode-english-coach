@@ -4,15 +4,11 @@ export type ProviderId = (typeof PROVIDER_IDS)[number];
 
 export type TranslationStyle = "balanced" | "faithful" | "polished" | "academic";
 
-export type PromptProfile = "screenshot" | "general" | "technical" | "academic" | "legal" | "subtitle" | "custom";
+export type PromptProfile = "general" | "technical" | "academic" | "legal" | "subtitle" | "custom";
 
 export type ModelTier = "fast" | "pro" | "custom";
 
 export type RewriteTone = "natural" | "casual" | "formal" | "concise";
-
-export type OCREngine = "local" | "tesseract" | "baidu" | "gemini" | "openai";
-
-export type OCRTextLayout = "formatted" | "compact";
 
 export type ProviderAPIProtocol = "openai" | "anthropic";
 
@@ -25,7 +21,6 @@ export interface RuntimeSettings {
   customPromptInstructions: string;
   ttsProvider: TTSProvider;
 }
-
 
 export interface ProviderConfig {
   id: ProviderId;
@@ -59,7 +54,7 @@ export interface TranslationResult {
   durationMs?: number;
 }
 
-// ---- Prosody analysis (ported from raycast-say-it-right) ----
+// ---- Prosody analysis ----
 export type Tone = "fall" | "rise" | "fall-rise" | "rise-fall" | "level";
 export type Link = "liaison" | "elision" | "intrusion" | null;
 
@@ -72,7 +67,10 @@ export interface ProsodyWord {
   ipa?: string;
   linkToNext?: Link;
 }
-export interface ThoughtGroup { tone: Tone; words: ProsodyWord[]; }
+export interface ThoughtGroup {
+  tone: Tone;
+  words: ProsodyWord[];
+}
 export interface ProsodyAnalysis {
   text: string;
   isGeneratedExample: boolean;
@@ -97,7 +95,10 @@ export function validateProsody(raw: unknown): ProsodyAnalysis {
       if (typeof w.text !== "string" || !w.text) throw new Error("prosody: word missing text");
       if (!Array.isArray(w.syllables) || w.syllables.length === 0) throw new Error("prosody: word missing syllables");
       if (w.nuclear === true && w.stressed !== true) throw new Error("prosody: nuclear word must be stressed");
-      if (w.stressIndex !== null && (typeof w.stressIndex !== "number" || (w.stressIndex as number) >= w.syllables.length)) {
+      if (
+        w.stressIndex !== null &&
+        (typeof w.stressIndex !== "number" || (w.stressIndex as number) >= w.syllables.length)
+      ) {
         throw new Error("prosody: stressIndex out of range");
       }
     }

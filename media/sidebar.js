@@ -1,5 +1,10 @@
 const vscode = acquireVsCodeApi();
-let state = { mode: "coach", tone: "natural", providerId: "", targetLanguage: "auto", watchEnabled: false, watchMode: "stage" };
+let state = {
+  mode: "coach",
+  tone: "natural",
+  providerId: "",
+  targetLanguage: "auto",
+};
 let lastNative = "";
 let currentEntryId = null;
 let currentStarred = false;
@@ -8,15 +13,15 @@ let reviewIdx = 0;
 
 const $ = (id) => document.getElementById(id);
 
-function send(type, payload) { vscode.postMessage({ type, ...payload }); }
+function send(type, payload) {
+  vscode.postMessage({ type, ...payload });
+}
 
 function applyState() {
   $("mode").value = state.mode;
   $("tone").value = state.tone;
   $("provider").value = state.providerId;
   $("targetLanguage").value = state.targetLanguage;
-  $("watchEnabled").checked = state.watchEnabled;
-  $("watchMode").value = state.watchMode;
   const translate = state.mode === "translate";
   $("toneRow").classList.toggle("hidden", translate);
   $("langRow").classList.toggle("hidden", !translate);
@@ -35,17 +40,27 @@ function setLoading() {
 function wordDiff(a, b) {
   const A = a.trim().split(/\s+/).filter(Boolean);
   const B = b.trim().split(/\s+/).filter(Boolean);
-  const n = A.length, m = B.length;
+  const n = A.length,
+    m = B.length;
   const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--)
     for (let j = m - 1; j >= 0; j--)
       dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
   const out = [];
-  let i = 0, j = 0;
+  let i = 0,
+    j = 0;
   while (i < n && j < m) {
-    if (A[i] === B[j]) { out.push({ t: "same", w: A[i] }); i++; j++; }
-    else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ t: "del", w: A[i] }); i++; }
-    else { out.push({ t: "ins", w: B[j] }); j++; }
+    if (A[i] === B[j]) {
+      out.push({ t: "same", w: A[i] });
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      out.push({ t: "del", w: A[i] });
+      i++;
+    } else {
+      out.push({ t: "ins", w: B[j] });
+      j++;
+    }
   }
   while (i < n) out.push({ t: "del", w: A[i++] });
   while (j < m) out.push({ t: "ins", w: B[j++] });
@@ -162,7 +177,8 @@ window.addEventListener("message", (event) => {
     sel.innerHTML = "";
     for (const p of msg.providers) {
       const opt = document.createElement("option");
-      opt.value = p.id; opt.textContent = p.title;
+      opt.value = p.id;
+      opt.textContent = p.title;
       sel.appendChild(opt);
     }
     if (!state.providerId && msg.providers[0]) state.providerId = msg.providers[0].id;
@@ -179,24 +195,42 @@ window.addEventListener("message", (event) => {
     if (state.mode === "translate") showResult({ mode: "translate", translation: e.output });
     else showResult({ mode: "coach", rewritten: e.output, why: e.why, source: e.source });
   } else if (msg.type === "review") startReview(msg.cards);
-  else if (msg.type === "setText" || msg.type === "stage") { $("input").value = msg.text; if (msg.type === "stage") $("input").focus(); }
+  else if (msg.type === "setText") {
+    $("input").value = msg.text;
+  }
 });
 
 document.addEventListener("DOMContentLoaded", () => {
   $("coach").onclick = run;
-  $("fromClipboard").onclick = () => send("fromClipboard", {});
+  $("pronunciation").onclick = () => send("practicePronunciation", { text: $("input").value || lastNative });
   $("setKey").onclick = () => send("setApiKey", {});
   $("copy").onclick = () => send("copy", { text: lastNative });
-  $("read").onclick = () => send("readAloud", { text: lastNative, slow: false });
-  $("readSlow").onclick = () => send("readAloud", { text: lastNative, slow: true });
-  $("input").addEventListener("keydown", (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run(); });
-  $("mode").onchange = (e) => { state.mode = e.target.value; applyState(); send("setState", { key: "mode", value: state.mode }); };
-  $("tone").onchange = (e) => { state.tone = e.target.value; send("setState", { key: "tone", value: state.tone }); };
-  $("provider").onchange = (e) => { state.providerId = e.target.value; send("setState", { key: "providerId", value: state.providerId }); };
-  $("targetLanguage").onchange = (e) => { state.targetLanguage = e.target.value; send("setState", { key: "targetLanguage", value: state.targetLanguage }); };
-  $("watchEnabled").onchange = (e) => { state.watchEnabled = e.target.checked; send("toggleWatch", { enabled: state.watchEnabled }); };
-  $("watchMode").onchange = (e) => { state.watchMode = e.target.value; send("setState", { key: "watchMode", value: state.watchMode }); };
-  $("star").onclick = () => { if (!currentEntryId) return; currentStarred = !currentStarred; send("star", { id: currentEntryId }); updateStar(); };
+  $("input").addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") run();
+  });
+  $("mode").onchange = (e) => {
+    state.mode = e.target.value;
+    applyState();
+    send("setState", { key: "mode", value: state.mode });
+  };
+  $("tone").onchange = (e) => {
+    state.tone = e.target.value;
+    send("setState", { key: "tone", value: state.tone });
+  };
+  $("provider").onchange = (e) => {
+    state.providerId = e.target.value;
+    send("setState", { key: "providerId", value: state.providerId });
+  };
+  $("targetLanguage").onchange = (e) => {
+    state.targetLanguage = e.target.value;
+    send("setState", { key: "targetLanguage", value: state.targetLanguage });
+  };
+  $("star").onclick = () => {
+    if (!currentEntryId) return;
+    currentStarred = !currentStarred;
+    send("star", { id: currentEntryId });
+    updateStar();
+  };
   $("reviewReveal").onclick = () => $("reviewAnswer").classList.remove("hidden");
   $("reviewNext").onclick = reviewNext;
   $("reviewExit").onclick = () => $("reviewWrap").classList.add("hidden");
@@ -205,7 +239,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!c) return;
     send("star", { id: c.id });
     reviewCards.splice(reviewIdx, 1);
-    if (!reviewCards.length) { $("reviewWrap").classList.add("hidden"); return; }
+    if (!reviewCards.length) {
+      $("reviewWrap").classList.add("hidden");
+      return;
+    }
     if (reviewIdx >= reviewCards.length) reviewIdx = 0;
     showReviewCard();
   };

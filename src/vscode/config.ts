@@ -1,12 +1,19 @@
 import * as vscode from "vscode";
-import { resolveModel } from "../core/models";
+import {
+  DEFAULT_SAY_IT_RIGHT_ANALYSIS_MODELS,
+  DEFAULT_SAY_IT_RIGHT_TTS_MODELS,
+  DEFAULT_TTS_VOICES,
+  SAY_IT_RIGHT_PROVIDER_IDS,
+  SayItRightProviderId,
+  resolveModel,
+} from "../core/models";
 import { detectProtocol } from "../core/providers";
 import { TTSConfig } from "../core/tts";
 import { ModelTier, PROVIDER_IDS, ProviderConfig, ProviderId } from "../core/types";
 import { getSecret } from "./secrets";
 
 export interface TtsTarget {
-  provider: "qwen" | "openai";
+  provider: SayItRightProviderId;
   voice: string;
   teacherInstructions: string;
   ttsModel: string;
@@ -43,6 +50,10 @@ export function getOrderedProviderIds(): ProviderId[] {
   const list = enabled.length > 0 ? enabled : [defaultProviderId()];
   const def = defaultProviderId();
   return list.includes(def) ? [def, ...list.filter((id) => id !== def)] : list;
+}
+
+function isSayItRightProviderId(value: string): value is SayItRightProviderId {
+  return (SAY_IT_RIGHT_PROVIDER_IDS as readonly string[]).includes(value);
 }
 
 export function defaultProviderId(): ProviderId {
@@ -91,10 +102,11 @@ export async function getTTSConfig(context: vscode.ExtensionContext): Promise<TT
   return {
     provider,
     geminiApiKey: (await getSecret(context, "gemini")) ?? "",
-    geminiVoice: c.get<string>("tts.geminiVoice") ?? "Kore",
+    geminiModel: c.get<string>("tts.geminiModel") ?? "gemini-3.1-flash-tts-preview",
+    geminiVoice: c.get<string>("tts.geminiVoice") ?? "Charon",
     dashscopeApiKey: (await getSecret(context, "qwen")) ?? "",
     qwenModel: c.get<string>("tts.qwenModel") ?? "qwen3-tts-flash",
-    qwenVoice: c.get<string>("tts.qwenVoice") ?? "Cherry",
+    qwenVoice: c.get<string>("tts.qwenVoice") ?? "Jennifer",
     qwenLanguageType: c.get<string>("tts.qwenLanguageType") ?? "Auto",
     qwenBaseURL: c.get<string>("tts.qwenBaseURL") ?? "https://dashscope.aliyuncs.com/api/v1",
     qwenInstructions: c.get<string>("tts.qwenInstructions") ?? "",
@@ -105,13 +117,8 @@ export async function getTTSConfig(context: vscode.ExtensionContext): Promise<TT
     minimaxApiKey: (await getSecret(context, "minimax")) ?? "",
     minimaxBaseURL: c.get<string>("tts.minimaxBaseURL") ?? "https://api.minimaxi.com/v1",
     minimaxModel: c.get<string>("tts.minimaxModel") ?? "speech-2.8-turbo",
-    minimaxVoiceId: c.get<string>("tts.minimaxVoiceId") ?? "male-qn-qingse",
+    minimaxVoiceId: c.get<string>("tts.minimaxVoiceId") ?? "English_expressive_narrator",
   };
-}
-
-export function getClipboardMinLength(): number {
-  const n = cfg().get<number>("clipboardWatch.minLength") ?? 12;
-  return Number.isFinite(n) ? n : 12;
 }
 
 function sirCfg() {
@@ -121,22 +128,22 @@ function sirCfg() {
 export async function getAnalysisConfig(context: vscode.ExtensionContext): Promise<ProviderConfig> {
   const c = sirCfg();
   const rawProvider = c.get<string>("provider") ?? "qwen";
-  const provider: ProviderId = (rawProvider === "openai" ? "openai" : "qwen") as ProviderId;
+  const provider = isSayItRightProviderId(rawProvider) ? rawProvider : "qwen";
   const base = await getProviderConfig(context, provider);
   const overrideModel = (c.get<string>(`analysisModel.${provider}`) ?? "").trim();
-  return { ...base, model: overrideModel || base.model };
+  return { ...base, model: overrideModel || DEFAULT_SAY_IT_RIGHT_ANALYSIS_MODELS[provider] || base.model };
 }
 
 export async function getTtsTarget(context: vscode.ExtensionContext): Promise<TtsTarget> {
   const c = sirCfg();
   const rawProvider = c.get<string>("provider") ?? "qwen";
-  const provider: "qwen" | "openai" = rawProvider === "openai" ? "openai" : "qwen";
+  const provider = isSayItRightProviderId(rawProvider) ? rawProvider : "qwen";
   const base = await getProviderConfig(context, provider);
   return {
     provider,
-    voice: (c.get<string>(`voice.${provider}`) ?? "").trim() || (provider === "openai" ? "marin" : "Cherry"),
+    voice: (c.get<string>(`voice.${provider}`) ?? "").trim() || DEFAULT_TTS_VOICES[provider],
     teacherInstructions: (c.get<string>("teacherInstructions") ?? "").trim(),
-    ttsModel: (c.get<string>(`ttsModel.${provider}`) ?? "").trim() || (provider === "openai" ? "gpt-4o-mini-tts" : "qwen3-tts-flash"),
+    ttsModel: (c.get<string>(`ttsModel.${provider}`) ?? "").trim() || DEFAULT_SAY_IT_RIGHT_TTS_MODELS[provider],
     ttsInstructModel: (c.get<string>("ttsInstructModel.qwen") ?? "").trim() || "qwen3-tts-instruct-flash",
     baseURL: base.baseURL,
     apiKey: base.apiKey,

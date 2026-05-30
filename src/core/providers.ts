@@ -100,6 +100,7 @@ async function generateWithGeminiProtocol(
   options: GenerationOptions = {},
 ): Promise<string> {
   const generationConfig: Record<string, unknown> = { temperature: 0.3, maxOutputTokens };
+  const structuredPrompt = applyStructuredPromptOptions(prompt, options);
   applyGeminiResponseFormat(generationConfig, options);
 
   const response = await postJson<GeminiResponse>(
@@ -110,8 +111,8 @@ async function generateWithGeminiProtocol(
       "Content-Type": "application/json",
     },
     {
-      system_instruction: { parts: [{ text: prompt.system }] },
-      contents: [{ role: "user", parts: [{ text: prompt.user }] }],
+      system_instruction: { parts: [{ text: structuredPrompt.system }] },
+      contents: [{ role: "user", parts: [{ text: structuredPrompt.user }] }],
       generationConfig,
     },
   );
@@ -177,15 +178,18 @@ async function generateWithOpenAIProtocol(
     stream: false,
   };
   applyOpenAIGenerationParams(body, config.model, maxOutputTokens, 0.3);
-  applyOpenAIResponseFormat(body, options);
+  applyOpenAIProviderQuirks(body, config);
+  applyOpenAIResponseFormat(body, options, config.id);
+  const finalPrompt = needsPromptEmbeddedSchema(config, options) ? applyStructuredPromptOptions(prompt, options) : prompt;
+  body.messages = [
+    { role: "system", content: finalPrompt.system },
+    { role: "user", content: finalPrompt.user },
+  ];
 
   const response = await postJson<OpenAICompatibleResponse>(
     chatCompletionsUrl(config.baseURL),
     timeoutMs,
-    {
-      Authorization: `Bearer ${config.apiKey}`,
-      "Content-Type": "application/json",
-    },
+    openAICompatibleHeaders(config),
     body,
   );
 
@@ -215,14 +219,12 @@ async function translateWithOpenAICompatible(config: ProviderConfig, request: Tr
     stream: false,
   };
   applyOpenAIGenerationParams(body, config.model, request.maxOutputTokens, 0.2);
+  applyOpenAIProviderQuirks(body, config);
 
   const response = await postJson<OpenAICompatibleResponse>(
     chatCompletionsUrl(config.baseURL),
     request.timeoutMs,
-    {
-      Authorization: `Bearer ${config.apiKey}`,
-      "Content-Type": "application/json",
-    },
+    openAICompatibleHeaders(config),
     body,
   );
 
@@ -426,8 +428,12 @@ function applyOpenAIGenerationParams(
  * `json_object` mode only guarantees valid JSON, not adherence to the schema,
  * so we always prefer json_schema when a schema is supplied.
  */
-function applyOpenAIResponseFormat(body: Record<string, unknown>, options: GenerationOptions): void {
+function applyOpenAIResponseFormat(body: Record<string, unknown>, options: GenerationOptions, providerId: ProviderId): void {
   if (options.responseJsonSchema) {
+    if (providerId === "mimo") {
+      body.response_format = { type: "json_object" };
+      return;
+    }
     body.response_format = {
       type: "json_schema",
       json_schema: {
@@ -470,21 +476,10 @@ function stripGeminiOnlyKeys(node: unknown): void {
   }
 }
 
-/**
- * Gemini moved structured output from `responseMimeType` + `responseJsonSchema`
- * to `responseFormat.text.{mimeType,schema}` (current docs as of 2026). We
- * write the new shape only — every shipping Gemini 2.5+/3.x model accepts it.
- */
 function applyGeminiResponseFormat(generationConfig: Record<string, unknown>, options: GenerationOptions): void {
-  const mimeType = options.responseMimeType ?? (options.responseJsonSchema ? "application/json" : undefined);
-  if (!mimeType && !options.responseJsonSchema) {
-    return;
+  if (options.responseMimeType === "application/json" || options.responseJsonSchema) {
+    generationConfig.responseMimeType = "application/json";
   }
-
-  const text: Record<string, unknown> = {};
-  if (mimeType) text.mimeType = mimeType;
-  if (options.responseJsonSchema) text.schema = options.responseJsonSchema;
-  generationConfig.responseFormat = { text };
 }
 
 function anthropicCompatibleHeaders(apiKey: string): Record<string, string> {
@@ -495,6 +490,27 @@ function anthropicCompatibleHeaders(apiKey: string): Record<string, string> {
     "anthropic-version": "2023-06-01",
     "Content-Type": "application/json",
   };
+}
+
+function openAICompatibleHeaders(config: ProviderConfig): Record<string, string> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${config.apiKey}`,
+    "Content-Type": "application/json",
+  };
+  if (config.id === "mimo") {
+    headers["api-key"] = config.apiKey;
+  }
+  return headers;
+}
+
+function applyOpenAIProviderQuirks(body: Record<string, unknown>, config: ProviderConfig): void {
+  if (config.id === "mimo") {
+    body.thinking = { type: "disabled" };
+  }
+}
+
+function needsPromptEmbeddedSchema(config: ProviderConfig, options: GenerationOptions): boolean {
+  return config.id === "mimo" && Boolean(options.responseJsonSchema || options.responseMimeType);
 }
 
 /**
@@ -516,7 +532,11 @@ function applyStructuredPromptOptions(
     return prompt;
   }
 
-  const constraints = ["Return only a valid JSON object. Do not wrap it in Markdown or add commentary."];
+  const constraints = [
+    "Return only a valid JSON object. Do not wrap it in Markdown or add commentary.",
+    "Return an instance of the requested data, not the JSON schema itself.",
+    "Never return schema keywords such as type, properties, required, items, or additionalProperties as top-level keys unless those keys are explicitly part of the requested data.",
+  ];
   if (options.responseJsonSchema) {
     constraints.push(`JSON schema: ${JSON.stringify(options.responseJsonSchema)}`);
   }

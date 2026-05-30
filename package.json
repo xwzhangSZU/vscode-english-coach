@@ -1,51 +1,24 @@
 {
-  "name": "vscode-english-coach",
-  "displayName": "Say It Right 英语口语教练",
-  "description": "英语口语教练 × 发音教练:把你写的英文改写成地道、像母语者的表达并用中文讲解(Qwen / DeepSeek / MiniMax / 小米 MiMo / Gemini / GPT,自带 Key);并能把任意句子拆成发音课——逐句标重音 / 升降调 / 节奏 / 连读 + 国际音标,配 0.25–4× 变速、可慢速的范读音陪你跟读、复读、导出。Rewrite your English into natural, native-sounding phrasing with Chinese explanations — now with a pronunciation studio: per-sentence stress, intonation, rhythm & linking + IPA and a slow-able model voice to shadow, loop and export. Bring your own key.",
-  "version": "0.2.2",
+  "name": "vscode-say-it-right",
+  "displayName": "Say It Right",
+  "description": "Practice English pronunciation in VS Code with stress, intonation, rhythm, linking, IPA, shadowing loops, and model speech.",
+  "version": "0.4.1",
   "keywords": [
     "english",
-    "英语",
-    "口语",
-    "英语口语",
-    "地道英语",
-    "english coach",
-    "英语教练",
-    "口语练习",
-    "改写",
-    "润色",
-    "翻译",
-    "translate",
-    "qwen",
-    "通义千问",
-    "dashscope",
-    "deepseek",
-    "minimax",
-    "海螺",
-    "mimo",
-    "小米",
-    "xiaomi",
-    "gemini",
-    "gpt",
-    "openai",
-    "chatgpt",
-    "byok",
-    "tts",
-    "朗读",
-    "copilot",
-    "vibe coding",
-    "发音",
     "pronunciation",
-    "跟读",
-    "shadowing",
-    "语调",
-    "intonation",
-    "音标",
+    "speaking",
+    "tts",
     "ipa",
+    "prosody",
+    "stress",
+    "shadowing",
+    "intonation",
+    "rhythm",
+    "english coach",
     "say it right"
   ],
   "icon": "media/icon.png",
-  "publisher": "xianwei-zhang",
+  "publisher": "Xianwei-Zhang",
   "license": "MIT",
   "author": "Xianwei Zhang",
   "repository": {
@@ -61,172 +34,530 @@
   },
   "categories": [
     "Education",
-    "Chat",
     "Other"
   ],
   "main": "./out/extension.js",
-  "activationEvents": [],
+  "activationEvents": [
+    "onView:englishCoach.sidebar",
+    "onView:englishCoach.history",
+    "onCommand:englishCoach.setApiKey",
+    "onCommand:englishCoach.focus",
+    "onCommand:englishCoach.reviewDeck",
+    "onCommand:sayItRight.analyzeSelection",
+    "onCommand:sayItRight.practiceSentence"
+  ],
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
           "id": "englishCoach",
-          "title": "English Coach",
-          "icon": "media/icon.svg"
+          "title": "Say It Right",
+          "icon": "media/icon.png"
         }
       ]
     },
     "views": {
       "englishCoach": [
-        { "id": "englishCoach.sidebar", "name": "Coach", "type": "webview" },
-        { "id": "englishCoach.history", "name": "Recent", "type": "tree" }
+        {
+          "id": "englishCoach.sidebar",
+          "name": "Coach",
+          "type": "webview"
+        },
+        {
+          "id": "englishCoach.history",
+          "name": "Recent",
+          "type": "tree"
+        }
       ]
     },
     "commands": [
       {
         "command": "englishCoach.setApiKey",
-        "title": "English Coach: Set API Key"
-      },
-      {
-        "command": "englishCoach.coachClipboard",
-        "title": "English Coach: Coach Clipboard Now"
+        "title": "Say It Right: Set API Key"
       },
       {
         "command": "englishCoach.focus",
-        "title": "English Coach: Open Sidebar"
+        "title": "Say It Right: Open Sidebar"
       },
-      { "command": "englishCoach.history.reload", "title": "English Coach: Reload History Entry" },
-      { "command": "englishCoach.history.copyOutput", "title": "Copy Native Version", "icon": "$(copy)" },
-      { "command": "englishCoach.history.delete", "title": "Delete", "icon": "$(trash)" },
-      { "command": "englishCoach.history.clear", "title": "English Coach: Clear History", "icon": "$(clear-all)" },
-      { "command": "englishCoach.reviewDeck", "title": "English Coach: Review Deck 复习错题本", "icon": "$(mortar-board)" },
-      { "command": "englishCoach.history.star", "title": "Star / Unstar", "icon": "$(star)" },
-      { "command": "sayItRight.analyzeSelection", "title": "Say It Right: Analyze Selection" },
-      { "command": "sayItRight.practiceSentence", "title": "Say It Right: Practice a Sentence" }
+      {
+        "command": "englishCoach.history.reload",
+        "title": "Say It Right: Reload History Entry"
+      },
+      {
+        "command": "englishCoach.history.copyOutput",
+        "title": "Copy Native Version",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "englishCoach.history.delete",
+        "title": "Delete",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "englishCoach.history.clear",
+        "title": "Say It Right: Clear History",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "englishCoach.reviewDeck",
+        "title": "Say It Right: Review Deck 复习错题本",
+        "icon": "$(mortar-board)"
+      },
+      {
+        "command": "englishCoach.history.star",
+        "title": "Star / Unstar",
+        "icon": "$(star)"
+      },
+      {
+        "command": "sayItRight.analyzeSelection",
+        "title": "Say It Right: Analyze Selection"
+      },
+      {
+        "command": "sayItRight.practiceSentence",
+        "title": "Say It Right: Practice Pronunciation"
+      }
     ],
     "menus": {
       "commandPalette": [
-        { "command": "englishCoach.history.reload", "when": "false" },
-        { "command": "englishCoach.history.copyOutput", "when": "false" },
-        { "command": "englishCoach.history.delete", "when": "false" },
-        { "command": "englishCoach.history.star", "when": "false" }
+        {
+          "command": "englishCoach.history.reload",
+          "when": "false"
+        },
+        {
+          "command": "englishCoach.history.copyOutput",
+          "when": "false"
+        },
+        {
+          "command": "englishCoach.history.delete",
+          "when": "false"
+        },
+        {
+          "command": "englishCoach.history.star",
+          "when": "false"
+        }
       ],
       "view/title": [
-        { "command": "englishCoach.reviewDeck", "when": "view == englishCoach.history", "group": "navigation" },
-        { "command": "englishCoach.history.clear", "when": "view == englishCoach.history", "group": "navigation" }
+        {
+          "command": "englishCoach.reviewDeck",
+          "when": "view == englishCoach.history",
+          "group": "navigation"
+        },
+        {
+          "command": "englishCoach.history.clear",
+          "when": "view == englishCoach.history",
+          "group": "navigation"
+        }
       ],
       "view/item/context": [
-        { "command": "englishCoach.history.star", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" },
-        { "command": "englishCoach.history.copyOutput", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" },
-        { "command": "englishCoach.history.delete", "when": "view == englishCoach.history && viewItem == historyEntry", "group": "inline" }
+        {
+          "command": "englishCoach.history.star",
+          "when": "view == englishCoach.history && viewItem == historyEntry",
+          "group": "inline"
+        },
+        {
+          "command": "englishCoach.history.copyOutput",
+          "when": "view == englishCoach.history && viewItem == historyEntry",
+          "group": "inline"
+        },
+        {
+          "command": "englishCoach.history.delete",
+          "when": "view == englishCoach.history && viewItem == historyEntry",
+          "group": "inline"
+        }
       ],
       "editor/context": [
-        { "command": "sayItRight.analyzeSelection", "when": "editorHasSelection", "group": "navigation" }
+        {
+          "command": "sayItRight.analyzeSelection",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        }
       ]
     },
-    "chatParticipants": [
-      {
-        "id": "englishCoach.coach",
-        "name": "coach",
-        "fullName": "English Coach",
-        "description": "Rewrite into idiomatic English — or use /translate",
-        "isSticky": true,
-        "commands": [
-          { "name": "translate", "description": "Translate to idiomatic English (or another language)" }
-        ]
-      }
-    ],
     "configuration": {
-      "title": "English Coach",
+      "title": "Say It Right",
       "properties": {
         "englishCoach.defaultProvider": {
           "type": "string",
-          "enum": ["qwen", "minimax", "deepseek", "mimo", "gemini", "openai"],
+          "enum": [
+            "qwen",
+            "minimax",
+            "deepseek",
+            "mimo",
+            "gemini",
+            "openai"
+          ],
           "default": "qwen",
           "description": "Provider used by default and listed first."
         },
         "englishCoach.providerOrder": {
           "type": "string",
-          "default": "qwen,minimax,gemini,openai",
+          "default": "qwen,minimax,mimo,gemini,openai",
           "description": "Comma-separated provider order shown in the switcher."
         },
         "englishCoach.modelTier": {
           "type": "string",
-          "enum": ["fast", "pro", "custom"],
+          "enum": [
+            "fast",
+            "pro",
+            "custom"
+          ],
           "default": "pro",
           "description": "Which model tier to use. Custom uses each provider's Model setting."
         },
-        "englishCoach.requestTimeoutSeconds": { "type": "number", "default": 45 },
-        "englishCoach.maxOutputTokens": { "type": "number", "default": 4096 },
-        "englishCoach.qwen.enabled": { "type": "boolean", "default": true },
-        "englishCoach.qwen.baseURL": { "type": "string", "default": "https://dashscope.aliyuncs.com/compatible-mode/v1" },
-        "englishCoach.qwen.model": { "type": "string", "default": "qwen-plus" },
-        "englishCoach.deepseek.enabled": { "type": "boolean", "default": false },
-        "englishCoach.deepseek.baseURL": { "type": "string", "default": "https://api.deepseek.com/anthropic" },
-        "englishCoach.deepseek.model": { "type": "string", "default": "deepseek-v4-flash" },
-        "englishCoach.mimo.enabled": { "type": "boolean", "default": false },
-        "englishCoach.mimo.baseURL": { "type": "string", "default": "https://token-plan-cn.xiaomimimo.com/v1" },
-        "englishCoach.mimo.model": { "type": "string", "default": "mimo-v2.5-pro" },
-        "englishCoach.gemini.enabled": { "type": "boolean", "default": true },
-        "englishCoach.gemini.baseURL": { "type": "string", "default": "https://generativelanguage.googleapis.com/v1beta" },
-        "englishCoach.gemini.model": { "type": "string", "default": "gemini-3.5-flash" },
-        "englishCoach.minimax.enabled": { "type": "boolean", "default": true },
-        "englishCoach.minimax.baseURL": { "type": "string", "default": "https://api.minimaxi.com/anthropic" },
-        "englishCoach.minimax.model": { "type": "string", "default": "MiniMax-M2.7-highspeed" },
-        "englishCoach.openai.enabled": { "type": "boolean", "default": true },
-        "englishCoach.openai.baseURL": { "type": "string", "default": "https://api.openai.com/v1" },
-        "englishCoach.openai.model": { "type": "string", "default": "gpt-4.1-mini" },
-        "englishCoach.tts.provider": { "type": "string", "enum": ["qwen", "gemini", "mimo", "minimax"], "default": "qwen" },
-        "englishCoach.tts.qwenModel": { "type": "string", "default": "qwen3-tts-flash" },
-        "englishCoach.tts.qwenVoice": { "type": "string", "default": "Cherry" },
-        "englishCoach.tts.qwenLanguageType": { "type": "string", "default": "Auto" },
-        "englishCoach.tts.qwenBaseURL": { "type": "string", "default": "https://dashscope.aliyuncs.com/api/v1" },
-        "englishCoach.tts.qwenInstructions": { "type": "string", "default": "" },
-        "englishCoach.tts.geminiVoice": { "type": "string", "default": "Kore" },
-        "englishCoach.tts.mimoModel": { "type": "string", "default": "mimo-v2.5-tts" },
-        "englishCoach.tts.mimoVoice": { "type": "string", "default": "Chloe" },
-        "englishCoach.tts.minimaxBaseURL": { "type": "string", "default": "https://api.minimaxi.com/v1" },
-        "englishCoach.tts.minimaxModel": { "type": "string", "default": "speech-2.8-turbo" },
-        "englishCoach.tts.minimaxVoiceId": { "type": "string", "default": "male-qn-qingse" },
-        "englishCoach.clipboardWatch.minLength": { "type": "number", "default": 12 },
+        "englishCoach.requestTimeoutSeconds": {
+          "type": "number",
+          "default": 45
+        },
+        "englishCoach.maxOutputTokens": {
+          "type": "number",
+          "default": 4096
+        },
+        "englishCoach.qwen.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "englishCoach.qwen.baseURL": {
+          "type": "string",
+          "default": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        },
+        "englishCoach.qwen.model": {
+          "type": "string",
+          "default": "qwen-plus"
+        },
+        "englishCoach.deepseek.enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "englishCoach.deepseek.baseURL": {
+          "type": "string",
+          "default": "https://api.deepseek.com/anthropic"
+        },
+        "englishCoach.deepseek.model": {
+          "type": "string",
+          "default": "deepseek-v4-flash"
+        },
+        "englishCoach.mimo.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "englishCoach.mimo.baseURL": {
+          "type": "string",
+          "default": "https://token-plan-cn.xiaomimimo.com/v1"
+        },
+        "englishCoach.mimo.model": {
+          "type": "string",
+          "enum": [
+            "mimo-v2.5-pro",
+            "mimo-v2.5",
+            "mimo-v2-flash"
+          ],
+          "default": "mimo-v2.5-pro"
+        },
+        "englishCoach.gemini.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "englishCoach.gemini.baseURL": {
+          "type": "string",
+          "default": "https://generativelanguage.googleapis.com/v1beta"
+        },
+        "englishCoach.gemini.model": {
+          "type": "string",
+          "default": "gemini-3.5-flash"
+        },
+        "englishCoach.minimax.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "englishCoach.minimax.baseURL": {
+          "type": "string",
+          "default": "https://api.minimaxi.com/anthropic"
+        },
+        "englishCoach.minimax.model": {
+          "type": "string",
+          "default": "MiniMax-M2.7-highspeed"
+        },
+        "englishCoach.openai.enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "englishCoach.openai.baseURL": {
+          "type": "string",
+          "default": "https://api.openai.com/v1"
+        },
+        "englishCoach.openai.model": {
+          "type": "string",
+          "default": "gpt-4.1-mini"
+        },
+        "englishCoach.tts.provider": {
+          "type": "string",
+          "enum": [
+            "qwen",
+            "gemini",
+            "mimo",
+            "minimax"
+          ],
+          "default": "qwen"
+        },
+        "englishCoach.tts.qwenModel": {
+          "type": "string",
+          "default": "qwen3-tts-flash"
+        },
+        "englishCoach.tts.qwenVoice": {
+          "type": "string",
+          "enum": [
+            "Jennifer",
+            "Aiden",
+            "Neil",
+            "Elias",
+            "Cherry",
+            "Katerina"
+          ],
+          "default": "Jennifer"
+        },
+        "englishCoach.tts.qwenLanguageType": {
+          "type": "string",
+          "default": "Auto"
+        },
+        "englishCoach.tts.qwenBaseURL": {
+          "type": "string",
+          "default": "https://dashscope.aliyuncs.com/api/v1"
+        },
+        "englishCoach.tts.qwenInstructions": {
+          "type": "string",
+          "default": ""
+        },
+        "englishCoach.tts.geminiModel": {
+          "type": "string",
+          "enum": [
+            "gemini-3.1-flash-tts-preview",
+            "gemini-2.5-flash-preview-tts"
+          ],
+          "default": "gemini-3.1-flash-tts-preview"
+        },
+        "englishCoach.tts.geminiVoice": {
+          "type": "string",
+          "enum": [
+            "Charon",
+            "Iapetus",
+            "Sulafat",
+            "Puck",
+            "Kore"
+          ],
+          "default": "Charon"
+        },
+        "englishCoach.tts.mimoModel": {
+          "type": "string",
+          "enum": [
+            "mimo-v2.5-tts"
+          ],
+          "default": "mimo-v2.5-tts"
+        },
+        "englishCoach.tts.mimoVoice": {
+          "type": "string",
+          "enum": [
+            "Chloe",
+            "Mia",
+            "Milo",
+            "Dean"
+          ],
+          "default": "Chloe"
+        },
+        "englishCoach.tts.minimaxBaseURL": {
+          "type": "string",
+          "default": "https://api.minimaxi.com/v1"
+        },
+        "englishCoach.tts.minimaxModel": {
+          "type": "string",
+          "default": "speech-2.8-turbo"
+        },
+        "englishCoach.tts.minimaxVoiceId": {
+          "type": "string",
+          "enum": [
+            "English_expressive_narrator",
+            "English_CaptivatingStoryteller",
+            "English_Trustworth_Man",
+            "English_SereneWoman",
+            "English_WiseScholar"
+          ],
+          "default": "English_expressive_narrator"
+        },
         "sayItRight.provider": {
           "type": "string",
-          "enum": ["qwen", "openai"],
+          "enum": [
+            "qwen",
+            "minimax",
+            "mimo",
+            "gemini",
+            "openai"
+          ],
           "default": "qwen",
-          "description": "Provider used by the Say It Right pronunciation player."
+          "description": "Provider used by the Say It Right pronunciation player for analysis and model speech."
         },
         "sayItRight.analysisModel.qwen": {
           "type": "string",
-          "default": "qwen3.5-flash",
+          "enum": [
+            "qwen3.6-flash",
+            "qwen3.7-max",
+            "qwen3.5-flash",
+            "qwen-plus"
+          ],
+          "default": "qwen3.6-flash",
           "description": "Qwen model used for pronunciation analysis."
+        },
+        "sayItRight.analysisModel.minimax": {
+          "type": "string",
+          "enum": [
+            "MiniMax-M2.7-highspeed",
+            "MiniMax-M2.7"
+          ],
+          "default": "MiniMax-M2.7-highspeed",
+          "description": "MiniMax model used for pronunciation analysis."
+        },
+        "sayItRight.analysisModel.mimo": {
+          "type": "string",
+          "enum": [
+            "mimo-v2.5-pro",
+            "mimo-v2.5",
+            "mimo-v2-flash"
+          ],
+          "default": "mimo-v2.5",
+          "description": "MiMo model used for pronunciation analysis (flash-tier default for speed)."
+        },
+        "sayItRight.analysisModel.gemini": {
+          "type": "string",
+          "enum": [
+            "gemini-3.5-flash",
+            "gemini-2.5-flash"
+          ],
+          "default": "gemini-3.5-flash",
+          "description": "Gemini model used for pronunciation analysis."
         },
         "sayItRight.analysisModel.openai": {
           "type": "string",
+          "enum": [
+            "gpt-5.4-nano",
+            "gpt-5.4-mini",
+            "gpt-5.5"
+          ],
           "default": "gpt-5.4-nano",
           "description": "OpenAI model used for pronunciation analysis."
         },
         "sayItRight.ttsModel.qwen": {
           "type": "string",
+          "enum": [
+            "qwen3-tts-flash",
+            "qwen3-tts-instruct-flash"
+          ],
           "default": "qwen3-tts-flash",
           "description": "Qwen TTS model used for read-aloud in the player."
         },
         "sayItRight.ttsInstructModel.qwen": {
           "type": "string",
+          "enum": [
+            "qwen3-tts-instruct-flash"
+          ],
           "default": "qwen3-tts-instruct-flash",
           "description": "Qwen instructable TTS model used for teacher-mode read-aloud."
         },
+        "sayItRight.ttsModel.minimax": {
+          "type": "string",
+          "enum": [
+            "speech-2.8-turbo",
+            "speech-2.8-hd"
+          ],
+          "default": "speech-2.8-turbo",
+          "description": "MiniMax TTS model used for read-aloud in the player."
+        },
+        "sayItRight.ttsModel.mimo": {
+          "type": "string",
+          "enum": [
+            "mimo-v2.5-tts"
+          ],
+          "default": "mimo-v2.5-tts",
+          "description": "MiMo TTS model used for read-aloud in the player."
+        },
+        "sayItRight.ttsModel.gemini": {
+          "type": "string",
+          "enum": [
+            "gemini-3.1-flash-tts-preview",
+            "gemini-2.5-flash-preview-tts"
+          ],
+          "default": "gemini-3.1-flash-tts-preview",
+          "description": "Gemini TTS model used for read-aloud in the player."
+        },
         "sayItRight.ttsModel.openai": {
           "type": "string",
+          "enum": [
+            "gpt-4o-mini-tts"
+          ],
           "default": "gpt-4o-mini-tts",
           "description": "OpenAI TTS model used for read-aloud in the player."
         },
         "sayItRight.voice.qwen": {
           "type": "string",
-          "default": "Cherry",
+          "enum": [
+            "Jennifer",
+            "Aiden",
+            "Neil",
+            "Elias",
+            "Cherry",
+            "Katerina"
+          ],
+          "default": "Jennifer",
           "description": "Voice name used with the Qwen TTS provider."
+        },
+        "sayItRight.voice.minimax": {
+          "type": "string",
+          "enum": [
+            "English_expressive_narrator",
+            "English_CaptivatingStoryteller",
+            "English_Trustworth_Man",
+            "English_SereneWoman",
+            "English_WiseScholar"
+          ],
+          "default": "English_expressive_narrator",
+          "description": "Voice id used with the MiniMax TTS provider."
+        },
+        "sayItRight.voice.mimo": {
+          "type": "string",
+          "enum": [
+            "Chloe",
+            "Mia",
+            "Milo",
+            "Dean"
+          ],
+          "default": "Chloe",
+          "description": "Voice name used with the MiMo TTS provider."
+        },
+        "sayItRight.voice.gemini": {
+          "type": "string",
+          "enum": [
+            "Charon",
+            "Iapetus",
+            "Sulafat",
+            "Puck"
+          ],
+          "default": "Charon",
+          "description": "Voice name used with the Gemini TTS provider."
         },
         "sayItRight.voice.openai": {
           "type": "string",
+          "enum": [
+            "marin",
+            "cedar",
+            "coral",
+            "alloy",
+            "ash",
+            "ballad",
+            "echo",
+            "fable",
+            "nova",
+            "onyx",
+            "sage",
+            "shimmer",
+            "verse"
+          ],
           "default": "marin",
           "description": "Voice name used with the OpenAI TTS provider."
         },
@@ -235,6 +566,13 @@
           "default": "Read slowly and clearly like a patient English teacher. Articulate each word, slightly exaggerate stressed syllables, neutral General American accent.",
           "description": "System instructions passed to the instructable TTS model for teacher-mode playback."
         },
+        "sayItRight.sentencesPerPage": {
+          "type": "number",
+          "default": 5,
+          "minimum": 1,
+          "maximum": 12,
+          "description": "How many sentences the pronunciation player shows on one page (analyses are cached, so flipping back is instant)."
+        },
         "sayItRight.loopCount": {
           "type": "number",
           "default": 3,
@@ -242,8 +580,13 @@
         },
         "sayItRight.loopGapSeconds": {
           "type": "number",
-          "default": 1.0,
+          "default": 1,
           "description": "Pause in seconds between loop repetitions."
+        },
+        "sayItRight.ffmpegPath": {
+          "type": "string",
+          "default": "/opt/homebrew/bin/ffmpeg",
+          "description": "ffmpeg executable path used for macOS microphone recording."
         }
       }
     }
